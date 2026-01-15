@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
-import { connectDB } from "./src/utils/dbconnect";
-import router from "./src/routes/main.routes";
+import { connectDB } from "./src/utils/dbconnect.ts";
+import router from "./src/routes/main.routes.ts";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 dotenv.config();
