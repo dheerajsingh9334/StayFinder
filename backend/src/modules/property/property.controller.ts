@@ -1,12 +1,12 @@
 import { Response, Request } from "express";
-import { AuthRequest } from "../auth/auth.types.ts";
+import { AuthRequest } from "../auth/auth.types";
 import { PropertyStatus, Role } from "@prisma/client";
 import {
   CreatePropertyBody,
   PropertyResponse,
   updatePropertyBody,
-} from "./property.types.ts";
-import prisma from "../../utils/dbconnect.ts";
+} from "./property.types";
+import prisma from "../../utils/dbconnect";
 import { title } from "process";
 import { count, log } from "console";
 

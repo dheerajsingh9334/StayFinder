@@ -5,7 +5,7 @@ import {
   AvaiabilityQuery,
 } from "../auth/auth.types";
 import { BookingStatus, PropertyStatus, Role } from "@prisma/client";
-import prisma from "../../utils/dbconnect.ts";
+import prisma from "../../utils/dbconnect";
 import { BlockTimeBody } from "./availability.types";
 
 export default class availabilityController {
