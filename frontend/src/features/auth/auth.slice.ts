@@ -101,6 +101,10 @@ const authSlice = createSlice({
         state.error = action.payload as string;
         state.isloading = false;
       })
+      .addCase(logout.rejected, (state, action) => {
+        state.isloading = false;
+        state.error = action.payload as string;
+      })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.isAuthenticated = false;
