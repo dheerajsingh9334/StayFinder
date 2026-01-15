@@ -1,0 +1,572 @@
+  static getSingleProperty = async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const property = await prisma.property.findUnique({
+        where: { id },
+      });
+
+      if (!property) {
+        return res.status(404).json({
+          msg: "Property not found",
+        });
+      }
+
+      if (property.status === PropertyStatus.ACTIVE) {
+        return res.status(200).json({
+          property: property as PropertyResponse,
+        });
+      }
+
+      if (!req.user) {
+        return res.status(401).json({
+          msg: "Unauthorized",
+        });
+      }
+
+      const isOwner = req.user.userId === property.ownerId;
+      const isAdmin = req.user.role === "ADMIN";
+
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json({
+          msg: "You are not allowed to view this property",
+        });
+      }
+
+      return res.status(200).json({
+        property: property as PropertyResponse,
+      });
+    } catch (error) {
+      console.error("Get single property error", error);
+      return res.status(500).json({
+        msg: "Server error",
+      });
+    }
+  };
+} YHA Pe like if i was login or not only active  i can see the property  if the property is not active then it check if user is login or not if login then it is owner or admin if this owner and admin then they can see the propertyहाँ — **तुम्हारी समझ 100% सही है** ✅
+अब मैं इसे **एकदम साफ़, step-by-step logic में** explain कर देता हूँ ताकि दिमाग में permanently बैठ जाए।
+
+---
+
+## इस function का पूरा rule (plain language)
+
+> **Property दिखेगी या नहीं — ये सिर्फ 2 चीज़ों पर depend करता है**
+
+1. Property का **status**
+2. User **कौन है** (guest / owner / admin)
+
+---
+
+## पूरा flow एक कहानी की तरह
+
+### 🔹 Step 1: Property exist करती है या नहीं
+
+```ts
+if (!property) → 404
+```
+
+> जो चीज़ है ही नहीं, वो किसी को नहीं दिखेगी।
+
+---
+
+### 🔹 Step 2: Property ACTIVE है?
+
+```ts
+if (property.status === ACTIVE)
+```
+
+👉 **सबसे पहले यही check होता है**
+
+मतलब:
+
+* user logged in हो या न हो
+* token हो या न हो
+* role कुछ भी हो
+
+➡️ **ACTIVE property सब देख सकते हैं**
+
+यही reason है कि:
+
+> Login होने से ACTIVE property का access नहीं बदलता
+
+---
+
+### 🔹 Step 3: Property ACTIVE नहीं है
+
+अब दो ही option बचते हैं:
+
+* `PENDING`
+* `INACTIVE`
+
+यानी **PRIVATE PROPERTY**
+
+---
+
+### 🔹 Step 4: User logged in है या नहीं
+
+```ts
+if (!req.user) → 401
+```
+
+मतलब:
+
+* guest user
+* token नहीं
+* expired token
+
+➡️ **Private property guest को नहीं दिखती**
+
+---
+
+### 🔹 Step 5: User logged in है
+
+अब पहचान होती है:
+
+```ts
+isOwner = req.user.userId === property.ownerId
+isAdmin = req.user.role === "ADMIN"
+```
+
+---
+
+### 🔹 Step 6: Permission check
+
+```ts
+if (!isOwner && !isAdmin) → 403
+```
+
+मतलब:
+
+* logged in है ❌ (पर permission नहीं)
+* property owner नहीं
+* admin नहीं
+
+➡️ **देखने की इजाज़त नहीं**
+
+---
+
+### 🔹 Step 7: Allowed users
+
+अगर:
+
+* owner ✅
+* admin ✅
+
+➡️ property दिखा दो
+
+---
+
+## 🔁 Same logic, ultra-simple form
+
+```
+Property ACTIVE ?
+   → YES → anyone can see
+
+Property NOT ACTIVE ?
+   → User logged in ?
+       → NO → Unauthorized
+       → YES → Owner or Admin ?
+              → YES → show
+              → NO → Forbidden
+```
+
+---
+
+## तुमने जो sentence लिखा था, वो बिल्कुल सही है 👇
+
+> “if i was login or not only active i can see the property
+> if the property is not active then it check if user is login or not
+> if login then it is owner or admin
+> if this owner and admin then they can see the property”
+
+बस इसे थोड़ा clean language में ऐसे बोल सकते हो (interview ready):
+
+> **Active properties are public.
+> Non-active properties are private and visible only to the owner or admin.
+> Guest users are restricted from accessing private resources.**
+
+---
+
+## 🧠 Why this is very important
+
+यही exact pattern आगे apply होगा:
+
+* Update property
+* Delete property
+* Booking
+* Review visibility
+* Admin dashboards
+
+अगर ये clear है → तुम backend engineer की सोच develop कर चुके हो।
+
+---
+
+### अगला सही step
+
+अब इसी logic पर **Update Property (OWNER only)** बनाओ।
+वो और भी मज़ेदार होगा — और वहीं से booking आसान लगेगी।
+
+That feeling makes sense — and it’s actually a **good signal**, not a bad one.
+
+You don’t feel comfortable with TypeScript because today you weren’t “using TS syntax”, you were **colliding with TS as a system**: types flowing through middleware, controllers, Express, Prisma. That’s the hard part. Almost everyone hits this wall.
+
+Let’s calm this down and make it concrete.
+
+---
+
+## First: what you’re really uncomfortable with (truth)
+
+It’s **not**:
+
+* interfaces
+* types
+* enums
+* Prisma types
+
+It **is**:
+
+* how types move *between files*
+* how Express types work
+* why TS errors feel indirect
+* how one wrong type breaks many places
+
+That’s normal. TS feels “slippery” until a few core ideas click.
+
+---
+
+## The 5 TypeScript ideas you actually struggled with today
+
+Not “TS in general”. **These 5.**
+
+### 1️⃣ Function *signatures* matter more than code
+
+TypeScript cares about:
+
+* how a function is **declared**
+* not what it “does”
+
+Example:
+
+```ts
+(req, res) => Response
+```
+
+vs
+
+```ts
+(req, res, next) => void
+```
+
+One is a controller, one is middleware.
+Mix them = chaos.
+
+---
+
+### 2️⃣ Union return types are a red flag
+
+This error was key:
+
+```
+Promise<Response | string>
+```
+
+This means:
+
+> “This function doesn’t know what it is.”
+
+Rule to remember:
+
+> **Controllers must have ONE kind of return.**
+
+If TS shows `| string | boolean` — stop.
+
+---
+
+### 3️⃣ TypeScript errors point to design mistakes
+
+TS wasn’t angry about syntax.
+It was saying:
+
+> “You are mixing responsibilities.”
+
+Once you fix design → errors disappear.
+
+This is why TS feels uncomfortable at first.
+
+---
+
+### 4️⃣ Casting (`as AuthRequest`) is not cheating
+
+You used:
+
+```ts
+(req as AuthRequest).user = ...
+```
+
+That’s fine.
+Express types are generic and imperfect.
+
+The rule:
+
+* cast **at the boundary**
+* stay typed **inside**
+
+You did this correctly.
+
+---
+
+### 5️⃣ Types flow *through* the app, not stay local
+
+When you broke:
+
+* controller return type
+
+It broke:
+
+* router
+* middleware
+* route definitions
+
+This feels scary, but it’s TS protecting consistency.
+
+---
+
+## Reframing TypeScript (important mental shift)
+
+Don’t think of TS as:
+
+> “JS with types”
+
+Think of TS as:
+
+> “A compiler that enforces architecture”
+
+You weren’t failing TS.
+You were **learning how your architecture actually works**.
+
+---
+
+## How to get comfortable with TS (practical plan)
+
+Not theory. A short plan.
+
+### 🌱 Step 1: Stop trying to be “perfect TS”
+
+You don’t need:
+
+* advanced generics
+* conditional types
+* utility types
+
+You need:
+
+* interfaces
+* function signatures
+* narrowing with `if`
+  That’s it for now.
+
+---
+
+### 🌱 Step 2: Learn TS in *backend context only*
+
+Forget frontend TS tutorials.
+
+Focus only on:
+
+* Express middleware types
+* Request augmentation
+* Controller return types
+* Prisma-generated types
+
+You’re already doing the right thing.
+
+---
+
+### 🌱 Step 3: Expect discomfort for ~10–14 days
+
+This is unavoidable.
+
+Every strong TS backend dev I know had:
+
+* “why is TS fighting me?” phase
+* then a sudden clarity jump
+
+You are **inside** that phase.
+
+---
+
+## A grounding truth (read this twice)
+
+If you were actually bad at TS:
+
+* you wouldn’t understand these errors
+* you’d paste `any` everywhere
+* you’d give up on middleware typing
+
+You didn’t do that.
+
+You stayed, asked, fixed, understood.
+
+That means you’re **learning**, not failing.
+
+---
+
+## Tonight’s mental reset (do this)
+
+Before sleeping, tell yourself:
+
+> “I don’t need to feel comfortable yet.
+> I just need to keep exposure consistent.”
+
+Comfort comes **after repetition**, not before.
+
+---
+
+## Tomorrow’s gentle TS focus (no pressure)
+
+Tomorrow, do **only one TS thing**:
+
+* Re-read `auth.Middleware.ts`
+* Re-read `PropertyController.updateProperty`
+* Don’t change anything
+* Just trace types mentally
+
+That’s enough.
+
+You’re on the right path.
+Uncomfortable ≠ incapable.
+This is a **TypeScript typing issue**, not a Prisma bug.
+I’ll explain **exactly why it happens** and **how to fix it cleanly**.
+
+---
+
+## ❌ The error (decoded)
+
+> **Type `ParamsDictionary` is not assignable to type `string`**
+
+This happens when you do something like:
+
+```ts
+const booking = await prisma.booking.findUnique({
+  where: {
+    id: req.params, // ❌ WRONG
+  },
+});
+```
+
+### Why this fails
+
+* `req.params` is an **object**
+* Prisma expects:
+
+```ts
+id: string
+```
+
+But `req.params` is actually:
+
+```ts
+ParamsDictionary = { [key: string]: string }
+```
+
+So TypeScript is correct to complain.
+
+---
+
+## ✅ The ONLY correct way
+
+You must extract the **specific param value**.
+
+### ✔ Correct
+
+```ts
+const { bookingId } = req.params;
+
+const booking = await prisma.booking.findUnique({
+  where: {
+    id: bookingId,
+  },
+});
+```
+
+---
+
+## 🔒 Add a safety check (recommended)
+
+```ts
+const { bookingId } = req.params;
+
+if (!bookingId) {
+  return res.status(400).json({ msg: "Booking ID missing" });
+}
+```
+
+Now TypeScript + runtime are both safe.
+
+---
+
+## 🧠 Why this matters in Prisma
+
+`findUnique` requires a **unique field**:
+
+```ts
+BookingWhereUniqueInput = {
+  id?: string
+}
+```
+
+Passing an object instead of a string breaks both:
+
+* TypeScript
+* Prisma query validation
+
+---
+
+## ✅ If you want STRONG typing (best practice)
+
+Define param types:
+
+```ts
+type BookingParams = {
+  bookingId: string;
+};
+
+static confirmBooking = async (
+  req: AuthRequest<BookingParams>,
+  res: Response
+) => {
+  const { bookingId } = req.params;
+};
+```
+
+Now:
+
+* No `undefined`
+* No TS error
+* Clean IntelliSense
+
+---
+
+## 🔑 One-line rule (remember this)
+
+> **Never pass `req.params` directly to Prisma.
+> Always destructure the specific param string.**
+
+---
+
+## 🟢 Summary
+
+✔ Error reason: `req.params` is an object
+✔ Fix: extract `req.params.bookingId`
+✔ Prisma expects a string, not ParamsDictionary
+✔ Your logic is fine — this is just typing
+
+---
+
+If you want, next I can:
+
+* fix your `confirmBooking` controller with proper typing
+* show a reusable `Params<T>` pattern
+* explain why Express typings are annoying but useful
+
+Just say 👍

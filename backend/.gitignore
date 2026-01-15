@@ -1,0 +1,8 @@
+node_modules
+# Keep environment variables out of version control
+.env
+/k6-test
+/generated/prisma
+node_modules
+#! npx ts-node src/server.ts
+Request<{}, {}, LoginBody> why we passed two bracket awhy not direct interface or one vracjet

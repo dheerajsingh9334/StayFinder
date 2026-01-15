@@ -1,0 +1,18 @@
+import { Router } from "express";
+import authRouter from "../modules/auth/auth.routes";
+import propertyRouter from "../modules/property/property.routes";
+import availabilityRouter from "../modules/availability/availability.routes";
+import bookingRouter from "../modules/booking/booking.routes";
+import reviewRouter from "../modules/reviews/reviews.routes";
+import faviroteRouter from "../modules/favirote/favorite.routes";
+import searchRouter from "../modules/search/search.routes";
+
+const router = Router();
+router.use("/auth", authRouter);
+router.use("/property", propertyRouter);
+router.use("/availability", availabilityRouter);
+router.use("/booking", bookingRouter);
+router.use("/reviews", reviewRouter);
+router.use("/favorite", faviroteRouter);
+router.use("/search", searchRouter);
+export default router;

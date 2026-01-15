@@ -1,0 +1,246 @@
+Perfect 👍
+Kal ka task **bilkul clear** hai aur tum already **right mental model** pe ho.
+Ab main tumhe **exact kya banana hai, kaise banana hai, aur kya avoid karna hai** woh crisp plan de raha hoon. Isse tum bina bhatke implement kar loge.
+
+---
+
+## 🎯 Kal ka goal (one line)
+
+**Ek READ-ONLY API banana hai jo bataye:**
+
+* property kab ❌ unavailable hai (owner block)
+* kab ❌ sold out hai (capacity = 0)
+* kab ⚠️ limited hai
+* kab ✅ fully available hai
+
+👉 **Availability + Capacity combined view**, railway style.
+
+---
+
+## 🧠 Sabse pehle thinking clear karo (non-negotiable)
+
+### Truth sources
+
+* **Availability table** → hard block (owner intent)
+* **Booking table** → capacity consumption
+* **Property table** → max capacity
+
+⚠️ Is API me:
+
+* ❌ koi DB write nahi
+* ❌ koi block create nahi
+* ❌ koi cron nahi
+
+Sirf **calculation**.
+
+---
+
+## ✅ API design (clean & interview-safe)
+
+### Endpoint
+
+```
+GET /property/:id/availability-summary
+```
+
+### Query params
+
+```
+?startDate=2026-02-01
+&endDate=2026-02-10
+```
+
+---
+
+## 🔁 API ka step-by-step logic (this is the solution)
+
+### 1️⃣ Validate input
+
+* startDate < endDate
+* valid date
+* range limit (e.g. max 30 or 60 days)
+
+This prevents heavy queries.
+
+---
+
+### 2️⃣ Property fetch
+
+* `capacity`
+* `status`
+
+Agar property inactive:
+
+* return empty / unavailable response
+
+---
+
+### 3️⃣ Availability (hard blocks) fetch
+
+From `propertyAvailability`:
+
+Condition:
+
+```
+propertyId
+startTime < endDate
+endTime > startDate
+```
+
+👉 Isse tumhe **blocked ranges** mil jaayenge.
+
+---
+
+### 4️⃣ Booking aggregation (capacity logic)
+
+From `booking` table:
+
+Conditions:
+
+* `status = CONFIRMED`
+* overlapping date range
+
+Tum already yeh overlap logic likh chuke ho 👍
+
+Is data se:
+
+* per-day capacity used calculate karni hai
+  (ya per-range simplified version)
+
+---
+
+### 5️⃣ Per-day decision engine (core logic 🔥)
+
+Har date ke liye yeh order follow karo:
+
+1. **Owner block hai?**
+
+   * Yes → ❌ `UNAVAILABLE`
+2. **Remaining capacity = 0?**
+
+   * Yes → ❌ `SOLD_OUT`
+3. **Remaining < max?**
+
+   * Yes → ⚠️ `LIMITED`
+4. Else
+
+   * ✅ `AVAILABLE`
+
+⚠️ Isko **DB me store nahi karna**
+Isko **response me compute karna**.
+
+---
+
+## 📦 Suggested response shape (frontend-friendly)
+
+Conceptually something like:
+
+```json
+{
+  "propertyId": "abc",
+  "capacity": 5,
+  "range": {
+    "start": "2026-02-01",
+    "end": "2026-02-10"
+  },
+  "calendar": [
+    {
+      "date": "2026-02-01",
+      "status": "AVAILABLE",
+      "remainingCapacity": 5
+    },
+    {
+      "date": "2026-02-02",
+      "status": "LIMITED",
+      "remainingCapacity": 2
+    },
+    {
+      "date": "2026-02-03",
+      "status": "SOLD_OUT",
+      "remainingCapacity": 0
+    },
+    {
+      "date": "2026-02-04",
+      "status": "UNAVAILABLE",
+      "remainingCapacity": 0
+    }
+  ]
+}
+```
+
+Frontend ko **zero extra logic** chahiye.
+
+---
+
+## 🧯 What NOT to do (important)
+
+Kal yeh sab mat karna:
+
+* ❌ capacity full hone pe availability block create karna
+* ❌ cron se availability sync karna
+* ❌ booking confirm pe availability write karna
+
+Yeh sab **derived state ko persist** karne ke sins hain.
+
+---
+
+## 🔐 Race condition angle (tumne already pooch liya tha)
+
+Good news:
+
+* Yeh summary API **race-free** hai
+* Kyunki:
+
+  * Read-only
+  * Transaction ki zarurat nahi
+
+Race sirf **booking create** me hoti hai
+Summary API sirf “current snapshot” dikhati hai.
+
+---
+
+## 🗂️ Kal ka execution order (follow this)
+
+### Step 1
+
+Availability overlap query implement karo
+
+### Step 2
+
+Booking overlap + capacity aggregation reuse karo
+
+### Step 3
+
+Per-day loop bana ke status derive karo
+
+### Step 4
+
+Clean response return karo
+
+Bas.
+
+---
+
+## 🧠 Senior mental model (yaad rakhna)
+
+> Booking API decides **can I book now**
+> Availability Summary API answers **what does the calendar look like**
+
+Tum dono ko alag rakh rahe ho → system stable rahega.
+
+---
+
+## Final verdict
+
+Tum ab **real booking engine** bana rahe ho, CRUD nahi.
+Kal ka kaam complete hua to:
+
+* payment integrate karna safe hoga
+* overbooking control me rahegi
+* calendar UX crystal clear hoga
+
+Kal yeh API ban jaaye →
+tum system-design interview ke **strong zone** me aa jaoge 🚀
+
+Aur routine reminder 😄
+**Did you solve any DSA question today?**
