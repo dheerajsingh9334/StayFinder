@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import prisma from "../../utils/dbconnect.ts";
+import prisma from "../../utils/dbconnect";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 
@@ -10,7 +10,7 @@ import {
   LoginBody,
   RegisterBody,
   UpdateProfileBody,
-} from "./auth.types.ts";
+} from "./auth.types";
 import { Role } from "@prisma/client";
 
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;

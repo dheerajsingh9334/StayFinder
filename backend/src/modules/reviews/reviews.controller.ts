@@ -6,7 +6,7 @@ import {
   EditReviewBody,
   REVIEW_WINDOW_DAYS,
 } from "./reviews.type";
-import prisma from "../../utils/dbconnect.ts";
+import prisma from "../../utils/dbconnect";
 import { BookingStatus, ReviewStatus, Role } from "@prisma/client";
 import { error } from "console";
 
