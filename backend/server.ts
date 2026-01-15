@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://stay-finder-blue.vercel.app/",
+  "https://stay-finder-blue.vercel.app",
 ];
 
 app.use(
