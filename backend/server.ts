@@ -15,7 +15,6 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://stay-finder-blue.vercel.app",
 ];
-
 app.use(
   cors({
     origin: (origin, cb) =>
@@ -25,6 +24,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.get("/health", (_, res: express.Response) => {
   res.send("StayFinder API is running...");
 });
