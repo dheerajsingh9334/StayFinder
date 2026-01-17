@@ -2,11 +2,12 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { logout } from "../../features/auth/auth.slice";
 import UpdateProfile from "./updateProfile";
+import { useNavigate } from "react-router-dom";
 
 export const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user, isloading } = useSelector((state: RootState) => state.auth);
-
+  const navigate = useNavigate();
   if (isloading) {
     return <>Loading....</>;
   }
@@ -19,6 +20,10 @@ export const Profile = () => {
   };
   console.log(user.role);
 
+  const ChangePassword = () => {
+    navigate("/account/changepassword");
+  };
+
   return (
     <div>
       <h2>Profile</h2>
@@ -29,6 +34,8 @@ export const Profile = () => {
       {user.phone && <p>Phone:{user.phone}</p>}
       <button onClick={handleLogout}>Logout</button>
       <UpdateProfile />
+
+      <button onClick={ChangePassword}>ChangePassword</button>
     </div>
   );
 };

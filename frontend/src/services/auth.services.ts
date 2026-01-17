@@ -5,6 +5,9 @@ import type {
   //   SignupPayload,
   AuthResponse,
   UpdateProfilePayload,
+  SignupPayload,
+  ChangePasswordPayload,
+  ChangePasswordResponse,
 } from "../features/auth/auth.types";
 
 export const authService = {
@@ -14,4 +17,10 @@ export const authService = {
 
   updateProfile: (data: UpdateProfilePayload) =>
     api.patch<AuthResponse>("/auth/updateProfile", data),
+
+  registred: (data: SignupPayload) =>
+    api.post<AuthResponse>("/auth/register", data),
+
+  changePassword: (data: ChangePasswordPayload) =>
+    api.patch<ChangePasswordResponse>("auth/password", data),
 };

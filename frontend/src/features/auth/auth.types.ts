@@ -27,3 +27,12 @@ export type UpdateProfilePayload = {
   phone?: string;
   avatarUrl?: string;
 };
+
+export type ChangePasswordPayload = {
+  oldPassword: string;
+  newPassword: string;
+};
+
+export type ChangePasswordResponse = {
+  msg: string;
+};

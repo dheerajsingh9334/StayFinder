@@ -7,6 +7,8 @@ import PropertyList from "../pages/property/propertyList";
 import PropertyDetails from "../pages/property/propertyDetails";
 import CreateProperty from "../pages/property/CreateProperty";
 import OwnerProperty from "../pages/property/OwnerProperty";
+import Singup from "../pages/auth/signup";
+import ChangePassword from "../pages/auth/ChangePassword";
 
 export default function AppRoutes() {
   return (
@@ -21,12 +23,8 @@ export default function AppRoutes() {
       />
 
       <Route
-      //   path="/register"
-      //   element={
-      //     <PublicRoute>
-      //         {/* <singup/> */}
-      //     </PublicRoute>
-      //   }
+        path="/register"
+        element={<PublicRoute>{<Singup />}</PublicRoute>}
       />
 
       <Route
@@ -34,6 +32,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="account/changePassword"
+        element={
+          <ProtectedRoute>
+            <ChangePassword />
           </ProtectedRoute>
         }
       />
