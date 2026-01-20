@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   getSingleProperteis,
   updateProperty,
-} from "../../features/property/property.slice";
+} from "../../features/property/property.hooks";
 import type { UpdatePropertyPayload } from "../../features/property/property.types";
 import toast from "react-hot-toast";
 
@@ -15,7 +15,7 @@ export default function PropertyDetails() {
 
   const { current } = useSelector((state: RootState) => state.property.all);
   const { isLoading, error } = useSelector(
-    (state: RootState) => state.property
+    (state: RootState) => state.property,
   );
   const { user } = useSelector((state: RootState) => state.auth);
   const [isEditing, setIsEditing] = useState<boolean>(false);

@@ -2,14 +2,14 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { useEffect, useState } from "react";
 import type { CreatePropertyPayload } from "../../features/property/property.types";
-import { createProperty } from "../../features/property/property.slice";
+import { createProperty } from "../../features/property/property.hooks";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateProperty() {
   const dispatch = useDispatch<AppDispatch>();
   const { error, isLoading, isSuccess } = useSelector(
-    (state: RootState) => state.property
+    (state: RootState) => state.property,
   );
   const navigate = useNavigate();
   //   const [title, setTitle] = useState<string>("");

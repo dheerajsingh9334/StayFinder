@@ -82,6 +82,6 @@ export enum PropertyStatus {
   DELETED = "DELETED",
 }
 
-export type SinglePropertyPayload = {
-  property: PropertyPayload;
-};
+// export type SinglePropertyPayload = {
+//   property: PropertyPayload;
+// };

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
-import { getOwnerProperty } from "../../features/property/property.slice";
+import { getOwnerProperty } from "../../features/property/property.hooks";
 import { useNavigate } from "react-router-dom";
 import { ThreeDot } from "react-loading-indicators";
 
@@ -9,7 +9,7 @@ export default function OwnerProperty() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { items, page, totalPage } = useSelector(
-    (state: RootState) => state.property.owner
+    (state: RootState) => state.property.owner,
   );
   const { isLoading } = useSelector((state: RootState) => state.property);
   useEffect(() => {
