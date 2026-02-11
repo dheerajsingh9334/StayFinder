@@ -1,39 +1,49 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
-import { getOwnerProperty } from "../../features/property/property.hooks";
 import { useNavigate } from "react-router-dom";
 import { ThreeDot } from "react-loading-indicators";
+import { useOwnerProperties } from "../../features/property/property.hooks";
+import { useState } from "react";
 
 export default function OwnerProperty() {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const { items, page, totalPage } = useSelector(
-    (state: RootState) => state.property.owner,
-  );
-  const { isLoading } = useSelector((state: RootState) => state.property);
-  useEffect(() => {
-    console.log("CALLING OWNER API WITH PAGE:", page);
-    dispatch(getOwnerProperty(page));
-  }, [dispatch, page]);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, error, isFetching } =
+    useOwnerProperties(page);
+  if (!data) {
+    return null;
+  }
+  if (isLoading)
+    return <ThreeDot color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />;
 
+  if (isError) {
+    return <div>{error instanceof Error ? error.message : "Error"}</div>;
+  }
+  console.log(data);
+
+  const { data: items, totalPage } = data;
+
+  if (!totalPage) {
+    console.log("total page is not found");
+  }
+
+  if (totalPage) {
+    console.log(totalPage);
+  }
   const handlePrev = () => {
     if (page > 1) {
-      dispatch(getOwnerProperty(page - 1));
+      setPage((p) => p - 1);
     }
   };
 
   const handleNext = () => {
     if (page < totalPage) {
-      dispatch(getOwnerProperty(page + 1));
+      setPage((p) => p + 1);
     }
   };
 
-  if (isLoading)
-    return <ThreeDot color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />;
   return (
     <div>
       <h2>owner Property</h2>
+      {isFetching && <p>Updatingg....</p>}
       {items.map((p) => (
         <div
           key={p.id}
@@ -48,7 +58,7 @@ export default function OwnerProperty() {
           <h3>{p.title}</h3>
           <h3>{p.price}</h3>
           <h3>{p.state}</h3>
-          <h3>{p.images[0]}</h3>
+          {p.images[0] && <img src={p.images[0]} width={150} />}
         </div>
       ))}
       <button onClick={handlePrev} disabled={page == 1}>

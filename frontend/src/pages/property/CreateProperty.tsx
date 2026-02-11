@@ -1,39 +1,15 @@
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
 import { useEffect, useState } from "react";
 import type { CreatePropertyPayload } from "../../features/property/property.types";
-import { createProperty } from "../../features/property/property.hooks";
+
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useCreateProperty } from "../../features/property/property.hooks";
 
 export default function CreateProperty() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { error, isLoading, isSuccess } = useSelector(
-    (state: RootState) => state.property,
-  );
   const navigate = useNavigate();
-  //   const [title, setTitle] = useState<string>("");
-  //   const [description, setDescription] = useState<string>("");
-  //   const [price, setPrice] = useState<number>(0);
-  //   const [state, setState] = useState<string>("delhi");
-  //   const [capacity, setCapacity] = useState<number>(1);
-  //   const [bedrooms, setBedrooms] = useState<number>(1);
-  //   const [bathtrooms, setBathrooms] = useState<number>(1);
-  //   const [city, setCity] = useState<string>("Delhi");
-  //   const [images, setImage] = useState<string[]>([""]);
-  //   const [amenities, setAmenities] = useState<string[]>([""]);
-  //   const [lat, setLat] = useState<number>(28.7041);
-  //   const [lng, setLng] = useState<number>(77.1025);
-  useEffect(() => {
-    if (error) {
-      toast.error(error, {
-        id: "Create-Property",
-      });
-    }
-    if (isSuccess) {
-      navigate("/Myproperty", { replace: true });
-    }
-  }, [error, isSuccess]);
+  const createProperty = useCreateProperty();
+  const { isPending, isSuccess, isError, error } = createProperty;
+
   const [form, setForm] = useState<CreatePropertyPayload>({
     title: "",
     description: "",
@@ -49,6 +25,18 @@ export default function CreateProperty() {
     lat: 28.7041,
     lng: 77.1025,
   });
+  useEffect(() => {
+    if (isError && error instanceof Error) {
+      toast.error(error.message, {
+        id: "Create-Property",
+      });
+    }
+    if (isSuccess) {
+      toast.success("Proerty created Successfully");
+      navigate("/Myproperty", { replace: true });
+    }
+  }, [error, isSuccess, isError, navigate]);
+
   const Amenities = [
     "wifi",
     "ac",
@@ -74,9 +62,8 @@ export default function CreateProperty() {
   };
 
   const handleCreate = () => {
-    dispatch(createProperty(form));
+    createProperty.mutate(form);
   };
-
   return (
     <div>
       <input
@@ -84,13 +71,13 @@ export default function CreateProperty() {
         type="text"
         placeholder="title"
         onChange={(e) => setForm({ ...form, title: e.target.value })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <textarea
         value={form.description}
         placeholder="description"
         onChange={(e) => setForm({ ...form, description: e.target.value })}
-        disabled={isLoading}
+        disabled={isPending}
       ></textarea>
       <input
         value={form.price}
@@ -101,14 +88,14 @@ export default function CreateProperty() {
         onChange={(e) =>
           setForm({ ...form, price: parseInt(e.target.value) || 0 })
         }
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.state}
         type="text"
         placeholder="state"
         onChange={(e) => setForm({ ...form, state: e.target.value })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.capacity}
@@ -119,7 +106,7 @@ export default function CreateProperty() {
         onChange={(e) =>
           setForm({ ...form, capacity: parseInt(e.target.value) })
         }
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.bedrooms}
@@ -129,7 +116,7 @@ export default function CreateProperty() {
         onChange={(e) =>
           setForm({ ...form, bedrooms: parseInt(e.target.value) })
         }
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.bathrooms}
@@ -139,21 +126,21 @@ export default function CreateProperty() {
         onChange={(e) =>
           setForm({ ...form, bathrooms: parseInt(e.target.value) })
         }
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.city}
         type="text"
         placeholder="city"
         onChange={(e) => setForm({ ...form, city: e.target.value })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.address}
         type="text"
         placeholder="address"
         onChange={(e) => setForm({ ...form, address: e.target.value })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.images}
@@ -170,7 +157,7 @@ export default function CreateProperty() {
               .filter((url) => url.length > 0),
           })
         }
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <div>
         {Amenities.map((amenity) => (
@@ -178,7 +165,7 @@ export default function CreateProperty() {
             key={amenity}
             type="button"
             onClick={() => toggleAmenity(amenity)}
-            disabled={isLoading}
+            disabled={isPending}
             style={{
               margin: "4px",
               background: form.amenities.includes(amenity)
@@ -197,18 +184,18 @@ export default function CreateProperty() {
         type="Number"
         placeholder="Lat"
         onChange={(e) => setForm({ ...form, lat: Number(e.target.value) })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
       <input
         value={form.lng}
         type="Number"
         placeholder="Lng"
         onChange={(e) => setForm({ ...form, lng: Number(e.target.value) })}
-        disabled={isLoading}
+        disabled={isPending}
       ></input>
 
-      <button onClick={handleCreate} disabled={isLoading}>
-        {isLoading ? "Creating..." : "CreateProperty"}
+      <button onClick={handleCreate} disabled={isPending}>
+        {isPending ? "Creating..." : "CreateProperty"}
       </button>
     </div>
   );

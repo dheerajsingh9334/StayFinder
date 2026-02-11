@@ -22,11 +22,13 @@ app.use(
         ? cb(null, true)
         : cb(new Error("CORS blocked")),
     credentials: true,
-  })
+  }),
 );
 
-app.get("/health", (_, res: express.Response) => {
+app.get("/health", (req, res: express.Response) => {
+  console.log(req.ip);
   res.send("StayFinder API is running...");
+  console.log(req.ip);
 });
 
 app.use("/api", router);
@@ -34,10 +36,10 @@ app.use("/api", router);
 async function start() {
   try {
     await connectDB();
-    console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
+    // console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
 
     app.listen(PORT, () =>
-      console.log(`Server running on http://localhost:${PORT}`)
+      console.log(`Server running on http://localhost:${PORT}`),
     );
   } catch (error) {
     console.error("Failed to start server:", error);

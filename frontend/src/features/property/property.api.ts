@@ -7,14 +7,14 @@ import type {
 } from "./property.types";
 
 export const CreatePropertyApi = async (
-  data: CreatePropertyPayload
+  data: CreatePropertyPayload,
 ): Promise<PropertyPayload> => {
   const res = await propertyServices.create(data);
   return res.data;
 };
 
 export const GetAllApi = async (
-  page: number
+  page: number,
 ): Promise<PropertyListResponse> => {
   const res = await propertyServices.getAll(page);
   return res.data;
@@ -26,7 +26,7 @@ export const getSingleApi = async (id: string): Promise<PropertyPayload> => {
 };
 
 export const getOwnerPropertyApi = async (
-  page: number
+  page: number,
 ): Promise<PropertyListResponse> => {
   const res = await propertyServices.getOwnerProperty(page);
   return res.data;
@@ -34,7 +34,7 @@ export const getOwnerPropertyApi = async (
 
 export const updatePropertyApi = async (
   id: string,
-  data: UpdatePropertyPayload
+  data: UpdatePropertyPayload,
 ): Promise<PropertyPayload> => {
   const res = await propertyServices.update(id, data);
   return res.data.property;

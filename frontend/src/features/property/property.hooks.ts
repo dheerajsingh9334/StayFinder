@@ -1,9 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreatePropertyApi, GetAllApi, getSingleApi } from "./property.api";
 import {
+  CreatePropertyApi,
+  GetAllApi,
+  getOwnerPropertyApi,
+  getSingleApi,
+  updatePropertyApi,
+} from "./property.api";
+import type {
   CreatePropertyPayload,
-  type PropertyListResponse,
-  type PropertyPayload,UpdatePropertyPayload
+  PropertyListResponse,
+  PropertyPayload,
+  UpdatePropertyVar,
 } from "./property.types";
 
 export const useProperties = (page: number) => {
@@ -35,9 +42,20 @@ export const useCreateProperty = () => {
 
 export const useUpdateProperty = () => {
   const query = useQueryClient();
-  return useMutation<PropertyPayload,Error,>({
-    mutationFn: ({ id, data }:{id:;data:})
+
+  return useMutation<PropertyPayload, Error, UpdatePropertyVar>({
+    mutationFn: ({ id, data }) => updatePropertyApi(id, data),
+
+    onSuccess: (_, { id }) => {
+      query.invalidateQueries({ queryKey: ["property", id] });
+      query.invalidateQueries({ queryKey: ["owner-properties"] });
+    },
   });
 };
-
-export const useOwnerProperties = (page: number) => {};
+export const useOwnerProperties = (page: number) => {
+  return useQuery<PropertyListResponse>({
+    queryKey: ["owner-properties", page],
+    queryFn: () => getOwnerPropertyApi(page),
+    placeholderData: (previosData) => previosData,
+  });
+};

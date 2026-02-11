@@ -20,7 +20,7 @@ export default function PropertyList() {
     if (page > 1) setPage((p: number) => p - 1);
   };
   const handleNext = () => {
-    if (page > 1) setPage((p) => p + 1);
+    if (page < totalPage) setPage((p) => p + 1);
   };
   return (
     <div>
@@ -48,7 +48,7 @@ export default function PropertyList() {
         Page{page} of {totalPage}
       </span>
       <button onClick={handleNext} disabled={page === totalPage}>
-        prev
+        next
       </button>
     </div>
   );

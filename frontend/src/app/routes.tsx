@@ -9,6 +9,7 @@ import CreateProperty from "../pages/property/CreateProperty";
 import OwnerProperty from "../pages/property/OwnerProperty";
 import Singup from "../pages/auth/signup";
 import ChangePassword from "../pages/auth/ChangePassword";
+import CalendarView from "../pages/availbility/CalenderView";
 
 export default function AppRoutes() {
   return (
@@ -62,6 +63,10 @@ export default function AppRoutes() {
         }
       />
       <Route path="/properties/:id" element={<PropertyDetails />} />
+      <Route
+        path="/CalendarView/properties/:propertyId"
+        element={<CalendarView />}
+      />
       <Route
       // path="/host"
       // element={

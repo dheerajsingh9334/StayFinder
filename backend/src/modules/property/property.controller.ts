@@ -441,7 +441,7 @@ export default class PropertyController {
         msg: "My Property",
         counts,
         total,
-        totalpage: Math.ceil(total / limit),
+        totalPage: Math.ceil(total / limit),
         page,
         limit,
         data: properties,

@@ -24,15 +24,15 @@ export type UpdatePropertyPayload = {
   bedrooms: number;
   bathrooms: number;
   city: string;
-  images: string[];
-  amenities: string[];
+  images?: string[];
+  amenities?: string[];
   lat?: number;
   lng?: number;
 };
 
-export type UpdatePropertyResponse = {
-  msg: string;
-  property: PropertyPayload;
+export type UpdatePropertyVar = {
+  id: string;
+  data: UpdatePropertyPayload;
 };
 
 export type PropertyPayload = {
@@ -81,7 +81,3 @@ export enum PropertyStatus {
   REJECTED = "REJECTED",
   DELETED = "DELETED",
 }
-
-// export type SinglePropertyPayload = {
-//   property: PropertyPayload;
-// };

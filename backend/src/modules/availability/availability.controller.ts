@@ -110,7 +110,7 @@ export default class availabilityController {
 
   static getCalenderView = async (
     req: Request<AvaiabilityParams, {}, {}, AvaiabilityQuery>,
-    res: Response
+    res: Response,
   ) => {
     try {
       const { propertyId } = req.params;
@@ -124,7 +124,7 @@ export default class availabilityController {
         return res.status(400).json({ msg: "Missing Dates " });
       }
 
-      const start = new Date(startDate);
+      const start = new Date(startDate || Date.now());
       const end = new Date(endDate);
 
       if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
@@ -168,8 +168,8 @@ export default class availabilityController {
         Date.UTC(
           start.getUTCFullYear(),
           start.getUTCMonth(),
-          start.getUTCDate()
-        )
+          start.getUTCDate(),
+        ),
       );
 
       while (cursor <= end) {
@@ -178,7 +178,7 @@ export default class availabilityController {
         dayEnd.setUTCDate(dayEnd.getDate() + 1);
 
         const blocked = blocks.some(
-          (b) => b.startTime < dayEnd && b.endTime > dayStart
+          (b) => b.startTime < dayEnd && b.endTime > dayStart,
         );
 
         if (blocked) {
@@ -203,8 +203,8 @@ export default class availabilityController {
             remaining === 0
               ? "SOLD_OUT"
               : remaining < property.capacity
-              ? "LIMITED"
-              : "AVAILABLE",
+                ? "LIMITED"
+                : "AVAILABLE",
           remainingCapacity: remaining,
         });
         cursor = dayEnd;
@@ -220,7 +220,7 @@ export default class availabilityController {
 
   static bookingAvailability = async (
     req: Request<AvaiabilityParams, {}, {}, AvaiabilityQuery>,
-    res: Response
+    res: Response,
   ) => {
     try {
       const { propertyId } = req.params;
@@ -275,8 +275,8 @@ export default class availabilityController {
         Date.UTC(
           start.getUTCFullYear(),
           start.getUTCMonth(),
-          start.getUTCDate()
-        )
+          start.getUTCDate(),
+        ),
       );
       while (cursor < end) {
         const dayStart = new Date(cursor);
@@ -301,8 +301,8 @@ export default class availabilityController {
             remaining === 0
               ? "SOLD_OUT"
               : remaining < property.capacity
-              ? "LIMITED"
-              : "AVAILABLE",
+                ? "LIMITED"
+                : "AVAILABLE",
           maxBookingCapacity: Math.max(remaining, 0),
         });
       }
