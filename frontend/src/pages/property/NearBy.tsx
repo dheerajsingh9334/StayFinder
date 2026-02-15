@@ -1,6 +1,6 @@
 import { useNearByProperty } from "../../features/property/property.hooks";
 import { useLiveLocation } from "../../hooks/useLiveLocation";
-import MapView from "./MapView";
+import MapView from "../map/MapView";
 
 export default function NearBy() {
   const location = useLiveLocation();

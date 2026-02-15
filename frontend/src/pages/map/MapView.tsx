@@ -1,6 +1,7 @@
-import React from "react";
 import type { NearByProperty } from "../../features/property/property.types";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import MapFollower from "./MapFollower";
+import LocateLiveBtn from "./lacateLiveBtn";
 type props = {
   properties?: NearByProperty[];
   userLat?: number;
@@ -9,18 +10,18 @@ type props = {
 
 export default function MapView({ properties = [], userLat, userLng }: props) {
   if (!userLat || !userLng) return null;
-
   return (
     <MapContainer
       center={[userLat, userLng]}
       zoom={12}
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100vh", width: "100%", position: "relative" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-
+      <LocateLiveBtn lat={userLat} lng={userLng} />
+      <MapFollower lat={userLat} lng={userLng} />
       <Marker position={[userLat, userLng]}>
         <Popup>
           A pretty CSS3 popup. <br /> Easily customizable.

@@ -10,7 +10,7 @@ import {
   usePropertyDetails,
 } from "../../features/property/property.hooks";
 import CalendarView from "../availbility/CalenderView";
-import MapView from "./MapView";
+import MapView from "../map/MapView";
 import { useLiveLocation } from "../../hooks/useLiveLocation";
 
 export default function PropertyDetails() {
