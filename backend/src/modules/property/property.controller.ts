@@ -7,6 +7,7 @@ import {
   updatePropertyBody,
 } from "./property.types";
 import prisma from "../../utils/dbconnect";
+import { count } from "console";
 
 export default class PropertyController {
   // ! CreateProperty
@@ -521,6 +522,63 @@ export default class PropertyController {
       });
     } catch (error) {
       console.error("Active Controller Error", error);
+      return res.status(500).json({
+        msg: "Server Error",
+      });
+    }
+  };
+
+  // ! use Location
+
+  static getNearby = async (req: Request, res: Response) => {
+    console.log("get map");
+
+    try {
+      const lat = Number(req.query.lat);
+      const lng = Number(req.query.lng);
+      const radius = Number(req.query.radius) || 0.1;
+      const limit = Math.min(50, Number(req.query.limit)) || 20;
+
+      if (!lat || !lng) {
+        return res.status(400).json({
+          msg: "Latitude and Longitude are required",
+        });
+      }
+      const maxLat = lat + radius;
+      const minLat = lat - radius;
+      const minLng = lng - radius;
+      const maxLng = lng + radius;
+
+      const properties = await prisma.property.findMany({
+        where: {
+          status: PropertyStatus.ACTIVE,
+          lat: {
+            gte: minLat,
+            lte: maxLat,
+          },
+          lng: {
+            gte: minLng,
+            lte: maxLng,
+          },
+        },
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          images: true,
+          lat: true,
+          lng: true,
+          city: true,
+          state: true,
+        },
+      });
+      return res.status(200).json({
+        count: properties.length,
+        data: properties,
+      });
+    } catch (error) {
+      console.error("getNearby error", error);
       return res.status(500).json({
         msg: "Server Error",
       });

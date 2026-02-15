@@ -10,6 +10,7 @@ import OwnerProperty from "../pages/property/OwnerProperty";
 import Singup from "../pages/auth/signup";
 import ChangePassword from "../pages/auth/ChangePassword";
 import CalendarView from "../pages/availbility/CalenderView";
+import NearBy from "../pages/property/NearBy";
 
 export default function AppRoutes() {
   return (
@@ -44,7 +45,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+      <Route path="/nearby" element={<PublicRoute>{<NearBy />}</PublicRoute>} />
       <Route path="/" element={<PropertyList />}></Route>
       <Route
         path="/CreateProperty"

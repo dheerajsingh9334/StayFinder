@@ -66,6 +66,24 @@ export type PropertyPayload = {
   availability: unknown[]; // TODO: type later
 };
 
+export type NearByProperty = {
+  id: string;
+  title: string;
+  price: number;
+  state: string;
+  city: string;
+  lat: number | null;
+  lng: number | null;
+  images?: string[];
+  averageRating: number;
+  availability: unknown[]; // TODO: type later
+};
+
+export type NearbyPropertyResponse = {
+  count: number;
+  data: NearByProperty[];
+};
+
 export type PropertyListResponse = {
   page: number;
   limit: number;

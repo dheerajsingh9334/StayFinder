@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./app/app.tsx";
 import AppProvider from "./app/provider.tsx";
 import { BrowserRouter } from "react-router-dom";
-
+import "leaflet/dist/leaflet.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppProvider>
@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </BrowserRouter>
     </AppProvider>
-  </StrictMode>
+  </StrictMode>,
 );

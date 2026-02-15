@@ -1,0 +1,11 @@
+.layout {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+.sidebar {
+  width: 50%;
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}

@@ -10,6 +10,8 @@ import {
   usePropertyDetails,
 } from "../../features/property/property.hooks";
 import CalendarView from "../availbility/CalenderView";
+import MapView from "./MapView";
+import { useLiveLocation } from "../../hooks/useLiveLocation";
 
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +20,7 @@ export default function PropertyDetails() {
 
   const { data: current, isLoading, isError, error } = usePropertyDetails(id!);
   const updateProperty = useUpdateProperty();
-
+  const userlocation = useLiveLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<UpdatePropertyPayload | null>(null);
 
@@ -207,6 +209,24 @@ export default function PropertyDetails() {
         style={{ flex: 1, position: "sticky", top: 20, paddingRight: "25px" }}
       >
         <CalendarView propertyId={id!} />
+        <MapView
+          properties={[
+            {
+              id: current.id,
+              title: current.title,
+              price: current.price,
+              state: current.state,
+              city: current.city,
+              lat: current.lat ?? null,
+              lng: current.lng ?? null,
+              images: current.images ?? [],
+              averageRating: current.averageRating ?? 0,
+              availability: current.availability ?? [],
+            },
+          ]}
+          userLat={userlocation?.lat}
+          userLng={userlocation?.lng}
+        />
       </div>
     </div>
   );

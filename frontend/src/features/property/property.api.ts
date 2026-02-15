@@ -1,6 +1,7 @@
 import { propertyServices } from "../../services/property.services";
 import type {
   CreatePropertyPayload,
+  NearbyPropertyResponse,
   PropertyListResponse,
   PropertyPayload,
   UpdatePropertyPayload,
@@ -38,4 +39,14 @@ export const updatePropertyApi = async (
 ): Promise<PropertyPayload> => {
   const res = await propertyServices.update(id, data);
   return res.data.property;
+};
+
+export const getNearByApi = async (
+  lat: number,
+  lng: number,
+  radius: number,
+  limit: number,
+): Promise<NearbyPropertyResponse> => {
+  const res = await propertyServices.getNearBy(lat, lng, radius, limit);
+  return res.data;
 };
