@@ -12,6 +12,7 @@ import {
   UpdateProfileBody,
 } from "./auth.types";
 import { Role } from "@prisma/client";
+import { sendEMailOtp } from "./otp.services";
 
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -31,7 +32,7 @@ const generateRefreshToken = (userId: string, role: Role) => {
     REFRESH_TOKEN_SECRET,
     {
       expiresIn: "7d",
-    }
+    },
   );
 };
 // !verifyRefreshToken
@@ -43,7 +44,7 @@ export default class AuthController {
   // !registerd
   static register = async (
     req: Request<{}, {}, RegisterBody>,
-    res: Response
+    res: Response,
   ) => {
     try {
       const { name, email, password, role, phone } = req.body;
@@ -342,6 +343,84 @@ export default class AuthController {
       });
     } catch (error) {
       console.error("Password Error", error);
+      return res.status(500).json({
+        msg: "server Error",
+        error: error,
+      });
+    }
+  };
+  static sendOtp = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      if (!user) {
+        return res.status(404).json({
+          msg: "User not FOund",
+        });
+      }
+
+      await sendEMailOtp(user.id, user.email);
+      return res.status(200).json({
+        msg: "Otp send to email",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        msg: "server Error",
+        error: error,
+      });
+    }
+  };
+
+  static verifyOtp = async (req: AuthRequest, res: Response) => {
+    try {
+      const { email, otp } = req.body;
+
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      const userRole: Role = user?.role as Role;
+      if (!user) {
+        return res.status(404).json({
+          msg: "User not FOund",
+        });
+      }
+      const recode = await prisma.otp.findFirst({
+        where: {
+          userId: user.id,
+          code: otp,
+          expiresAt: { gt: new Date() },
+        },
+      });
+      if (!recode) {
+        return res.status(400).json({ msg: "Invalid or expired OTP" });
+      }
+
+      await prisma.otp.delete({
+        where: { id: recode.id },
+      });
+
+      const accessToken = generateAccessToken(user.id, userRole);
+      const refreshToken = generateRefreshToken(user.id, userRole);
+
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 15 * 60 * 1000,
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({ msg: "OTP verified. Login success" });
+    } catch (error) {
       return res.status(500).json({
         msg: "server Error",
         error: error,

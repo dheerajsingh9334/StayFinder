@@ -5,7 +5,7 @@ import router from "./src/routes/main.routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 dotenv.config();
-
+import "./src/services/email.listner";
 const PORT = process.env.PORT || 3000;
 const app = express();
 

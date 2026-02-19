@@ -6,14 +6,18 @@ const authRouter = Router();
 
 authRouter.post("/register", AuthController.register);
 authRouter.post("/login", AuthController.login);
+
+authRouter.post("/otp/send", AuthController.sendOtp);
+authRouter.post("/otp/verify", AuthController.verifyOtp);
 authRouter.post("/refreshToken", AuthController.refreshToken);
 authRouter.post("/logout", AuthController.logout);
 authRouter.get("/me", authMiddleware, AuthController.getProfile);
 authRouter.patch(
   "/updateProfile",
   authMiddleware,
-  AuthController.updateProfile
+  AuthController.updateProfile,
 );
+
 authRouter.patch("/password", authMiddleware, AuthController.changePassword);
 
 export default authRouter;

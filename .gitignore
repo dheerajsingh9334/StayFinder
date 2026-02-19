@@ -22,10 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.txt
-.pdf
-.docx
- *.pdf
+*.txt
+*.pdf
 *.docx
  backend.dheeraj
  frontend.dheeraj
