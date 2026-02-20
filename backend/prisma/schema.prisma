@@ -26,6 +26,18 @@ enum Role {
   ADMIN
 }
 
+enum PaymentStatus {
+   INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  STRIPE
+  RAZORPAY
+}
+
 enum PropertyStatus {
   PENDING
   ACTIVE
@@ -35,7 +47,7 @@ enum PropertyStatus {
 }
 
 enum BookingStatus {
-  PENDING
+  PENDING_PAYMENT
   CONFIRMED
   CANCELLED
   COMPLETED
@@ -52,6 +64,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 Otps Otp[]
+payments    Payment[]
   properties   Property[]
   bookings     Booking[]
   reviews      Review[]
@@ -105,12 +118,13 @@ model Booking {
   startDate  DateTime
   endDate    DateTime
   totalPrice Float
-  status     BookingStatus @default(PENDING) //confirmed | cancelled | completed
+  status     BookingStatus @default(PENDING_PAYMENT) //confirmed | cancelled | completed
   paymentId  String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   capacity   Int
   review     Review?
+  payment Payment?
   user       User          @relation(fields: [userId], references: [id])
   userId     String        @db.ObjectId
   property   Property      @relation(fields: [propertyId], references: [id])
@@ -165,4 +179,29 @@ model PropertyAvailability {
   createdAt  DateTime @default(now())
 
   property Property @relation(fields: [propertyId], references: [id])
+}
+
+model Payment {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+
+  amount    Float
+  currency  String        @default("INR")
+  status    PaymentStatus @default(INITIATED)
+
+  provider  PaymentProvider
+  providerPaymentId String?
+
+  bookingId String   @unique @db.ObjectId
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+
+  failureReason String?
+  rawWebhook    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerPaymentId])
 }
