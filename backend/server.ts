@@ -5,7 +5,9 @@ import router from "./src/routes/main.routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 dotenv.config();
-import "./src/services/email.listner";
+import "./src/listener/email.listner";
+import "./src/listener/payment.listeners";
+import "./src/listener/booking.listner";
 const PORT = process.env.PORT || 3000;
 const app = express();
 

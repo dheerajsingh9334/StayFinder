@@ -4,6 +4,7 @@ import { BookintParams, CreateBookingBody } from "./booking.types";
 import prisma from "../../utils/dbconnect";
 import { BookingStatus, PropertyStatus, Role } from "@prisma/client";
 import { autoCompleteBooking } from "../../utils/autocomplete";
+import eventBus from "../../event/event";
 
 export default class bookingController {
   static createBooking = async (req: AuthRequest, res: Response) => {
@@ -118,8 +119,13 @@ export default class bookingController {
           endDate: end,
           capacity,
           totalPrice,
-          status: BookingStatus.PENDING,
+          status: BookingStatus.PENDING_PAYMENT,
         },
+      });
+      eventBus.emit("BOOKING_CREATED", {
+        bookingId: booking.id,
+        userId: req.user.userId,
+        amount: booking.totalPrice,
       });
       return res.status(201).json({
         msg: "Booking created successfully",
@@ -167,7 +173,7 @@ export default class bookingController {
           propertyId,
           status: {
             in: [
-              BookingStatus.PENDING,
+              BookingStatus.PENDING_PAYMENT,
               BookingStatus.CONFIRMED,
               BookingStatus.COMPLETED,
             ],

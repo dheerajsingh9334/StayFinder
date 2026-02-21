@@ -6,6 +6,7 @@ import bookingRouter from "../modules/booking/booking.routes";
 import reviewRouter from "../modules/reviews/reviews.routes";
 import faviroteRouter from "../modules/favirote/favorite.routes";
 import searchRouter from "../modules/search/search.routes";
+import Paymentrouter from "../modules/payment/payment.routes";
 
 const router = Router();
 router.use("/auth", authRouter);
@@ -15,4 +16,5 @@ router.use("/booking", bookingRouter);
 router.use("/reviews", reviewRouter);
 router.use("/favorite", faviroteRouter);
 router.use("/search", searchRouter);
+router.use("/payment", Paymentrouter);
 export default router;
