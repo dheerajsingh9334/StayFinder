@@ -29,7 +29,7 @@ export default class PaymentWebhook {
       console.log("WEBHOOK HIT", req.body.event);
       if (event === "payment.captured") {
         const payment = payload.payment.entity;
-        const bookingId = payment.notes?.receipt;
+        const bookingId = payment.notes?.bookingId;
         const userId = payment.notes?.userId;
         console.log("NOTES:", payment.notes);
         if (!bookingId || !userId) {
