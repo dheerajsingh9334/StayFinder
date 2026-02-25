@@ -37,7 +37,7 @@ export default class PaymentWebhook {
             msg: "Invalid metadata",
           });
         }
-        const existingPayment = await prisma.payment.findUnique({
+        const existingPayment = await prisma.payment.findFirst({
           where: { providerPaymentId: payment.id },
         });
 
