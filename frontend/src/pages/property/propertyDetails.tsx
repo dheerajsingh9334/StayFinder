@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -17,7 +17,7 @@ export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
 
   const { user } = useSelector((state: RootState) => state.auth);
-
+  const navigate = useNavigate();
   const { data: current, isLoading, isError, error } = usePropertyDetails(id!);
   const updateProperty = useUpdateProperty();
   const userlocation = useLiveLocation();
@@ -94,6 +94,9 @@ export default function PropertyDetails() {
     "fresh-pillow",
     "fresh-flowers",
   ] as const;
+  const handleBook = () => {
+    navigate(`/booking/new?propertyId=${current.id}`);
+  };
 
   return (
     <div
@@ -228,6 +231,11 @@ export default function PropertyDetails() {
           userLng={userlocation?.lng}
         />
       </div>
+      {!user && (
+        <button onClick={() => navigate("/login")}>Login to Book</button>
+      )}
+
+      {user && !isOwner && <button onClick={handleBook}>Book Now</button>}
     </div>
   );
 }

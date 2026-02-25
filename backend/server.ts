@@ -8,6 +8,7 @@ dotenv.config();
 import "./src/listener/email.listner";
 import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
+import "./src/jobs/booking.crons";
 const PORT = process.env.PORT || 3000;
 const app = express();
 

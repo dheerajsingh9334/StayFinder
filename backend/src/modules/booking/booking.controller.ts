@@ -5,6 +5,7 @@ import prisma from "../../utils/dbconnect";
 import { BookingStatus, PropertyStatus, Role } from "@prisma/client";
 import { autoCompleteBooking } from "../../utils/autocomplete";
 import eventBus from "../../event/event";
+import { BOOKING_EVENTS } from "../../event/booking.event";
 
 export default class bookingController {
   static createBooking = async (req: AuthRequest, res: Response) => {
@@ -300,6 +301,10 @@ export default class bookingController {
         where: { id: bookingId },
         data: { status: BookingStatus.CANCELLED },
       });
+      eventBus.emit(BOOKING_EVENTS.CANCELLED, {
+        bookingId: cancelled.id,
+        userId: cancelled.userId,
+      });
 
       return res.status(200).json({
         msg: "Booking cancelled successfully",
@@ -363,7 +368,10 @@ export default class bookingController {
         where: { id: bookingId },
         data: { status: BookingStatus.COMPLETED },
       });
-
+      eventBus.emit(BOOKING_EVENTS.CONFIRMED, {
+        bookingId: completeBooking.id,
+        userId: completeBooking.userId,
+      });
       return res
         .status(200)
         .json({ msg: "Booking COmpleted", completeBooking });

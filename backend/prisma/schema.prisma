@@ -48,6 +48,7 @@ enum PropertyStatus {
 
 enum BookingStatus {
   PENDING_PAYMENT
+  PENDING
   CONFIRMED
   CANCELLED
   COMPLETED
@@ -189,7 +190,7 @@ model Payment {
   status    PaymentStatus @default(INITIATED)
 
   provider  PaymentProvider
-  providerPaymentId String?
+  providerPaymentId String @unique
 
   bookingId String   @unique @db.ObjectId
   booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -203,5 +204,5 @@ model Payment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([providerPaymentId])
+  // @@index([providerPaymentId])
 }

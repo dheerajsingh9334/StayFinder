@@ -3,58 +3,91 @@ import crypto from "crypto";
 
 import { BookingStatus, PaymentStatus } from "@prisma/client";
 import prisma from "../utils/dbconnect";
+import { PAYMENT_EVENTS } from "../event/payment.event";
+import eventBus from "../event/event";
+import { BOOKING_EVENTS } from "../event/booking.event";
 
 export default class PaymentWebhook {
   static handle = async (req: Request, res: Response) => {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+    try {
+      const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
-    const signature = req.headers["x-razorpay-signature"] as string;
-    const body = JSON.stringify(req.body);
+      const signature = req.headers["x-razorpay-signature"] as string;
+      const body = JSON.stringify(req.body);
 
-    const expectedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(body)
-      .digest("hex");
+      const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(body)
+        .digest("hex");
 
-    if (signature !== expectedSignature) {
-      return res.status(400).json({ msg: "Invalid webhook signature" });
-    }
+      if (signature !== expectedSignature) {
+        return res.status(400).json({ msg: "Invalid webhook signature" });
+      }
 
-    const event = req.body.event;
-    const payload = req.body.payload;
+      const event = req.body.event;
+      const payload = req.body.payload;
 
-    if (event === "payment.captured") {
-      const payment = payload.payment.entity;
-      const bookingId = payment.notes?.receipt;
+      if (event === "payment.captured") {
+        const payment = payload.payment.entity;
+        const bookingId = payment.notes?.receipt;
+        const userId = payment.notes?.userId;
+        if (!bookingId || !userId) {
+          return res.status(400).json({
+            msg: "Invalid metadata",
+          });
+        }
+        const existingPayment = await prisma.payment.findUnique({
+          where: { providerPaymentId: payment.id },
+        });
 
-      await prisma.$transaction([
-        prisma.payment.create({
-          data: {
-            bookingId,
-            amount: payment.amount / 100,
-            provider: "RAZORPAY",
-            providerPaymentId: payment.id,
-            status: PaymentStatus.SUCCESS,
-            userId: payment.notes.userId,
-          },
-        }),
-        prisma.booking.update({
+        if (existingPayment) {
+          return res.json({
+            msg: "Already Proceed",
+          });
+        }
+        await prisma.$transaction([
+          prisma.payment.create({
+            data: {
+              bookingId,
+              amount: payment.amount / 100,
+              provider: "RAZORPAY",
+              providerPaymentId: payment.id,
+              status: PaymentStatus.SUCCESS,
+              userId: payment.notes.userId,
+            },
+          }),
+          prisma.booking.update({
+            where: { id: bookingId },
+            data: { status: BookingStatus.CONFIRMED },
+          }),
+        ]);
+        eventBus.emit(PAYMENT_EVENTS.SUCCESS, {
+          bookingId,
+          userId,
+        });
+        eventBus.emit(BOOKING_EVENTS.CONFIRMED, {
+          bookingId,
+          userId,
+        });
+      }
+
+      if (event === "payment.failed") {
+        const payment = payload.payment.entity;
+        const bookingId = payment.notes?.receipt;
+
+        await prisma.booking.update({
           where: { id: bookingId },
-          data: { status: BookingStatus.CONFIRMED },
-        }),
-      ]);
+          data: { status: BookingStatus.CANCELLED },
+        });
+        eventBus.emit(PAYMENT_EVENTS.FAILED, {
+          bookingId,
+        });
+      }
+
+      return res.json({ status: "ok" });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      return res.status(500).json({ msg: "Server error" });
     }
-
-    if (event === "payment.failed") {
-      const payment = payload.payment.entity;
-      const bookingId = payment.notes?.receipt;
-
-      await prisma.booking.update({
-        where: { id: bookingId },
-        data: { status: BookingStatus.CANCELLED },
-      });
-    }
-
-    return res.json({ status: "ok" });
   };
 }

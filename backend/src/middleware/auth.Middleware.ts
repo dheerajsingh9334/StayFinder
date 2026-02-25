@@ -6,7 +6,7 @@ import { AuthRequest, AuthTokenPayload } from "../modules/auth/auth.types";
 export const authMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const token = req.cookies?.accessToken as string | undefined;
@@ -19,7 +19,7 @@ export const authMiddleware = (
 
     const payload = jwt.verify(
       token,
-      process.env.ACCESS_TOKEN_SECRET!
+      process.env.ACCESS_TOKEN_SECRET!,
     ) as AuthTokenPayload;
 
     // 👇 cast once, use safely

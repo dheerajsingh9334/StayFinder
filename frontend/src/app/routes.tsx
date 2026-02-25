@@ -11,6 +11,8 @@ import Singup from "../pages/auth/signup";
 import ChangePassword from "../pages/auth/ChangePassword";
 import CalendarView from "../pages/availbility/CalenderView";
 import NearBy from "../pages/property/NearBy";
+import BookingPage from "../pages/booking/BookingPage";
+import BookingDetails from "../pages/booking/BookingDetails";
 
 export default function AppRoutes() {
   return (
@@ -68,6 +70,8 @@ export default function AppRoutes() {
         path="/CalendarView/properties/:propertyId"
         element={<CalendarView />}
       />
+      <Route path="/booking/new" element={<BookingPage />} />
+      <Route path="/booking/:id" element={<BookingDetails />} />
       <Route
       // path="/host"
       // element={
