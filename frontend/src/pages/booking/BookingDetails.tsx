@@ -43,7 +43,23 @@ export default function BookingDetails() {
 
         handler: async () => {
           toast.loading("Verifying payment...");
-          await refetch(); // webhook confirm karega
+
+          const interval = setInterval(async () => {
+            const res = await refetch();
+            const updated = res.data?.booking.find((b) => b.id === booking.id);
+
+            if (updated?.status === "CONFIRMED") {
+              clearInterval(interval);
+              toast.dismiss();
+              navigate("/mybooking");
+            }
+          }, 2000);
+
+          setTimeout(() => {
+            clearInterval(interval);
+            toast.dismiss();
+            toast.error("Verification taking longer than expected");
+          }, 20000);
         },
       };
 
