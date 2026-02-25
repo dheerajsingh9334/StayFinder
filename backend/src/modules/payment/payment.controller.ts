@@ -8,9 +8,11 @@ export default class PaymentController {
     try {
       if (!req.user) return res.status(401).json({ msg: "Unauthorized" });
       const { bookingId } = req.body;
+      const userId = req.user.userId;
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
       });
+
       if (!booking)
         return res.status(404).json({
           msg: "Booking not Found",
@@ -19,10 +21,10 @@ export default class PaymentController {
       const order = await razorpay.orders.create({
         amount: Math.round(booking.totalPrice * 100),
         currency: "INR",
-        receipt: bookingId,
+        receipt: booking.id,
         notes: {
-          bookingId: bookingId,
-          userId: booking.userId,
+          bookingId: booking.id,
+          userId: userId,
         },
       });
       return res.status(200).json({

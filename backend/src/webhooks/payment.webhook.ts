@@ -10,7 +10,6 @@ import { BOOKING_EVENTS } from "../event/booking.event";
 export default class PaymentWebhook {
   static handle = async (req: Request, res: Response) => {
     try {
-      console.log("WEBHOOK HIT", req.body.event);
       const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
       const signature = req.headers["x-razorpay-signature"] as string;
@@ -27,11 +26,12 @@ export default class PaymentWebhook {
 
       const event = req.body.event;
       const payload = req.body.payload;
-
+      console.log("WEBHOOK HIT", req.body.event);
       if (event === "payment.captured") {
         const payment = payload.payment.entity;
         const bookingId = payment.notes?.receipt;
         const userId = payment.notes?.userId;
+        console.log("NOTES:", payment.notes);
         if (!bookingId || !userId) {
           return res.status(400).json({
             msg: "Invalid metadata",
@@ -57,6 +57,7 @@ export default class PaymentWebhook {
               userId,
             },
           });
+          console.log("NOTES:", payment.notes);
 
           await tx.booking.update({
             where: { id: bookingId },
@@ -66,6 +67,7 @@ export default class PaymentWebhook {
             },
           });
         });
+        console.log("BOOKING ID:", bookingId);
         eventBus.emit(PAYMENT_EVENTS.SUCCESS, {
           bookingId,
           userId,
