@@ -30,16 +30,21 @@ export default function BookingDetails() {
       currency: payment.currency,
       order_id: payment.orderId,
       handler: async () => {
-        await new Promise((r) => setTimeout(r, 2000));
-        const res = await refetch();
-        const updated = res.data?.booking.find((b) => b.id === booking.id);
-        if (updated?.status === "CONFIRMED") {
-          navigate("/mybooking");
-          return;
+        for (let i = 0; i < 6; i++) {
+          await new Promise((r) => setTimeout(r, 2000));
+          const res = await refetch();
+          const updated = res.data?.booking.find((b) => b.id === booking.id);
+          if (updated?.status === "CONFIRMED") {
+            navigate("/mybooking");
+            return;
+          }
         }
         // payment success callback (frontend only)
         // backend webhook will confirm booking
         // await refetch();
+        toast.error("Payment received but confirmation delayed", {
+          id: "verify",
+        });
       },
     };
 

@@ -10,6 +10,7 @@ import { BOOKING_EVENTS } from "../event/booking.event";
 export default class PaymentWebhook {
   static handle = async (req: Request, res: Response) => {
     try {
+      console.log("WEBHOOK HIT", req.body.event);
       const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
 
       const signature = req.headers["x-razorpay-signature"] as string;
