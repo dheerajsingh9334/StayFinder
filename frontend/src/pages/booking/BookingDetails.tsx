@@ -10,46 +10,48 @@ export default function BookingDetails() {
   const createPayment = useCreatePayment();
   const navigate = useNavigate();
 
+  const booking = data?.booking.find((b) => b.id === id);
+
+  // 🔔 Error toast
   useEffect(() => {
-    if (isError) {
-      toast.error(error.message, { id: "bookng error" });
+    if (isError && error instanceof Error) {
+      toast.error(error.message, { id: "booking-error" });
     }
   }, [isError, error]);
-  const booking = data?.booking.find((b) => b.id === id);
+
+  // 🚀 AUTO REDIRECT WHEN CONFIRMED
+  useEffect(() => {
+    if (booking?.status === "CONFIRMED") {
+      toast.success("Booking Confirmed 🎉");
+      navigate("/mybooking");
+    }
+  }, [booking?.status, navigate]);
 
   if (!booking) return <p>Loading...</p>;
 
   const handlePay = async () => {
-    const payment = await createPayment.mutateAsync({
-      bookingId: booking.id,
-    });
+    try {
+      const payment = await createPayment.mutateAsync({
+        bookingId: booking.id,
+      });
 
-    const options = {
-      key: payment.key,
-      amount: payment.amount,
-      currency: payment.currency,
-      order_id: payment.orderId,
-      handler: async () => {
-        for (let i = 0; i < 6; i++) {
-          await new Promise((r) => setTimeout(r, 2000));
-          const res = await refetch();
-          const updated = res.data?.booking.find((b) => b.id === booking.id);
-          if (updated?.status === "CONFIRMED") {
-            navigate("/mybooking");
-            return;
-          }
-        }
-        // payment success callback (frontend only)
-        // backend webhook will confirm booking
-        // await refetch();
-        toast.error("Payment received but confirmation delayed", {
-          id: "verify",
-        });
-      },
-    };
+      const options = {
+        key: payment.key,
+        amount: payment.amount,
+        currency: payment.currency,
+        order_id: payment.orderId,
 
-    const razor = new (window as any).Razorpay(options);
-    razor.open();
+        handler: async () => {
+          toast.loading("Verifying payment...");
+          await refetch(); // webhook confirm karega
+        },
+      };
+
+      const razor = new (window as any).Razorpay(options);
+      razor.open();
+    } catch (err) {
+      toast.error("Payment failed");
+    }
   };
 
   return (

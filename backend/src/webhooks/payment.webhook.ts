@@ -46,22 +46,26 @@ export default class PaymentWebhook {
             msg: "Already Proceed",
           });
         }
-        await prisma.$transaction([
-          prisma.payment.create({
+        await prisma.$transaction(async (tx) => {
+          const createdPayment = await tx.payment.create({
             data: {
               bookingId,
               amount: payment.amount / 100,
               provider: "RAZORPAY",
               providerPaymentId: payment.id,
               status: PaymentStatus.SUCCESS,
-              userId: payment.notes.userId,
+              userId,
             },
-          }),
-          prisma.booking.update({
+          });
+
+          await tx.booking.update({
             where: { id: bookingId },
-            data: { status: BookingStatus.CONFIRMED },
-          }),
-        ]);
+            data: {
+              status: BookingStatus.CONFIRMED,
+              paymentId: createdPayment.id, // ⭐ IMPORTANT
+            },
+          });
+        });
         eventBus.emit(PAYMENT_EVENTS.SUCCESS, {
           bookingId,
           userId,
