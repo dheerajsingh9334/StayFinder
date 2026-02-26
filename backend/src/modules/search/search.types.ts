@@ -7,7 +7,9 @@ export interface PropertySerachQuery {
   search?: string;
   startDate?: string;
   endDate?: string;
-
+  country?: string;
+  state?: string;
   page?: number;
   limit?: number;
+  amenities?: string[];
 }

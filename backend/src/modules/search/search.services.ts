@@ -2,42 +2,86 @@ import { PropertyStatus } from "@prisma/client";
 import { PropertySerachQuery } from "./search.types";
 import prisma from "../../utils/dbconnect";
 
+/**
+ * Utility: safe number conversion
+ */
+const toNumber = (v: any): number | undefined => {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
 export const searchProperty = async (query: PropertySerachQuery) => {
-  const { city, minPrice, maxPrice, search, capacity, startDate, endDate } =
-    query;
+  const {
+    address,
+    city,
+    state,
+    minPrice,
+    maxPrice,
+    search,
+    capacity,
+    startDate,
+    endDate,
+    amenities,
+  } = query;
 
   const filter: any = {
     status: PropertyStatus.ACTIVE,
   };
 
+  // 🔹 Normalize numbers
+  const capNum = toNumber(capacity);
+  const minNum = toNumber(minPrice);
+  const maxNum = toNumber(maxPrice);
+
+  // 🔹 Location filters
   if (city) {
-    filter.city = city;
+    filter.city = {
+      equals: city.trim(),
+      mode: "insensitive",
+    };
   }
 
-  if (capacity) {
-    filter.capacity = { gte: capacity };
+  if (amenities?.length) {
+    filter.amenities = {
+      hasSome: amenities,
+    };
+  }
+  if (state) {
+    filter.state = {
+      equals: state.trim(),
+      mode: "insensitive",
+    };
   }
 
-  if (minPrice || maxPrice) {
+  if (address) {
+    filter.address = {
+      contains: address.trim(),
+      mode: "insensitive",
+    };
+  }
+
+  // 🔹 Capacity filter
+  if (capNum !== undefined) {
+    filter.capacity = { gte: capNum };
+  }
+
+  // 🔹 Price filter
+  if (minNum !== undefined || maxNum !== undefined) {
     filter.price = {};
-    if (minPrice) filter.price.gte = minPrice;
-    if (maxPrice) filter.price.lte = maxPrice;
+    if (minNum !== undefined) filter.price.gte = minNum;
+    if (maxNum !== undefined) filter.price.lte = maxNum;
   }
 
-  if (search?.trim()) {
+  // 🔹 Keyword search (title / description / address)
+  if (search && search.trim()) {
     filter.OR = [
-      {
-        title: { contains: search, mode: "insensitive" },
-      },
-      {
-        discription: { contains: search, mode: "insensitive" },
-      },
-      {
-        address: { contains: search, mode: "insensitive" },
-      },
+      { title: { contains: search } },
+      { description: { contains: search } },
     ];
   }
 
+  // 🔹 Availability filter
   if (startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -51,10 +95,12 @@ export const searchProperty = async (query: PropertySerachQuery) => {
     };
   }
 
-  const page = Math.max(1, Number(query.page) || 1);
-  const limit = Math.min(50, Math.max(1, Number(query.limit) || 10));
+  // 🔹 Pagination
+  const page = Math.max(1, toNumber(query.page) || 1);
+  const limit = Math.min(50, Math.max(1, toNumber(query.limit) || 10));
   const skip = (page - 1) * limit;
 
+  // 🔹 Query DB
   const [properties, total] = await Promise.all([
     prisma.property.findMany({
       where: filter,
@@ -65,15 +111,18 @@ export const searchProperty = async (query: PropertySerachQuery) => {
         id: true,
         title: true,
         city: true,
+        state: true,
         country: true,
         price: true,
         capacity: true,
         images: true,
         address: true,
+        amenities: true,
       },
     }),
     prisma.property.count({ where: filter }),
   ]);
+
   return {
     page,
     limit,
@@ -83,6 +132,3 @@ export const searchProperty = async (query: PropertySerachQuery) => {
     data: properties,
   };
 };
-
-// give me full folder structure for frontend read stayfinder project and use things that make more useful also fully state management
-//  that handle large amount of user like 100k+ and i want to use both redux and context letter add some libary

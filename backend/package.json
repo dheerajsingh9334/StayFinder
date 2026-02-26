@@ -28,7 +28,10 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@pinecone-database/pinecone": "^7.1.0",
     "@prisma/client": "^6.19.0",
+    "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cookieparser": "^0.1.0",
@@ -39,6 +42,7 @@
     "mongodb": "^7.0.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.1",
+    "openai": "^6.25.0",
     "razorpay-node-typescript": "^1.1.4"
   }
 }

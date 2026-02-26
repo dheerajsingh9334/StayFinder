@@ -3,6 +3,7 @@ import SearchController from "./search.controller";
 
 const searchRouter = Router();
 
-searchRouter.get("/property", SearchController.searchProperty);
+searchRouter.get("/", SearchController.searchProperty);
 
+searchRouter.post("/aisearch", SearchController.aiSearch);
 export default searchRouter;
