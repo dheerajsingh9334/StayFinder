@@ -31,12 +31,12 @@ export default class PaymentWebhook {
         const payment = payload.payment.entity;
         const bookingId = payment.notes?.bookingId;
         const userId = payment.notes?.userId;
-        console.log("NOTES:", payment.notes);
-        if (!bookingId || !userId) {
-          return res.status(400).json({
-            msg: "Invalid metadata",
-          });
+        const orderId = payment.order_id;
+
+        if (!bookingId || !userId || !orderId) {
+          return res.status(400).json({ msg: "Invalid metadata" });
         }
+
         const existingPayment = await prisma.payment.findFirst({
           where: { providerPaymentId: payment.id },
         });
@@ -47,14 +47,12 @@ export default class PaymentWebhook {
           });
         }
         await prisma.$transaction(async (tx) => {
-          const createdPayment = await tx.payment.create({
+          const createdPayment = await tx.payment.update({
+            where: { orderId },
             data: {
-              bookingId,
-              amount: payment.amount / 100,
-              provider: "RAZORPAY",
               providerPaymentId: payment.id,
-              status: PaymentStatus.SUCCESS,
-              userId,
+              status: "SUCCESS",
+              rawWebhook: req.body,
             },
           });
           console.log("NOTES:", payment.notes);
@@ -63,7 +61,6 @@ export default class PaymentWebhook {
             where: { id: bookingId },
             data: {
               status: BookingStatus.CONFIRMED,
-              paymentId: createdPayment.id, // ⭐ IMPORTANT
             },
           });
         });
@@ -80,14 +77,19 @@ export default class PaymentWebhook {
 
       if (event === "payment.failed") {
         const payment = payload.payment.entity;
-        const bookingId = payment.notes?.receipt;
+        // const bookingId = payment.notes?.receipt;
+        const orderId = payment.order_id;
 
-        await prisma.booking.update({
-          where: { id: bookingId },
-          data: { status: BookingStatus.CANCELLED },
+        await prisma.payment.update({
+          where: { orderId },
+          data: {
+            status: "FAILED",
+            failureReason: payment.error_description,
+            rawWebhook: req.body,
+          },
         });
         eventBus.emit(PAYMENT_EVENTS.FAILED, {
-          bookingId,
+          failureReason: payment.error_description,
         });
       }
 

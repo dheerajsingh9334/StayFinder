@@ -4,8 +4,16 @@ export type CreatePaymentResponse = {
   amount: number;
   currency: string;
   key: string;
+  status: PaymentStatus;
 };
 
 export type CreatepaymentPayload = {
   bookingId: string;
 };
+
+export enum PaymentStatus {
+  INITIATED = "INITIATED",
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+}

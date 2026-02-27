@@ -18,6 +18,24 @@ export default class PaymentController {
           msg: "Booking not Found",
         });
 
+      if (booking.userId !== userId) {
+        return res.status(403).json({ msg: "Not allowed" });
+      }
+
+      if (booking.status !== "PENDING_PAYMENT") {
+        return res.status(403).json({ msg: "Booking already paid or invalid" });
+      }
+      const existingPaymentInitiated = await prisma.payment.findFirst({
+        where: {
+          bookingId,
+          status: "INITIATED",
+        },
+      });
+      if (existingPaymentInitiated) {
+        return res.status(400).json({
+          msg: "Payment already initiated",
+        });
+      }
       const order = await razorpay.orders.create({
         amount: Math.round(booking.totalPrice * 100),
         currency: "INR",
@@ -27,17 +45,28 @@ export default class PaymentController {
           userId: userId,
         },
       });
+      await prisma.payment.create({
+        data: {
+          userId,
+          bookingId: booking.id,
+          orderId: order.id,
+          amount: booking.totalPrice,
+          provider: "RAZORPAY",
+          status: "INITIATED",
+        },
+      });
       return res.status(200).json({
         msg: "Order Success",
         orderId: order.id,
         amount: order.amount,
         currncy: order.currency,
         key: process.env.RAZORPAY_KEY_ID,
+        // status: order.status,
       });
     } catch (err: any) {
       console.error("RAZORPAY ERROR:", err);
       return res.status(500).json({
-        msg: "Razorpay error",
+        msg: "Payment initialization error",
         error: err?.error || err,
       });
     }

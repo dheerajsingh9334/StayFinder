@@ -20,7 +20,9 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (isError) {
-      toast.error(error.message, { id: "create-Booking" });
+      const message = (error as any)?.response?.data?.msg || "Booking failed";
+
+      toast.error(message, { id: "create-Booking" });
     }
     if (isSuccess && data?.booking?.id) {
       toast.success("booking Created , Complete Payment");

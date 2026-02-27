@@ -6,9 +6,9 @@ import { useRazorpayPayment } from "../../features/payment/useRazorpayPayment";
 
 export default function BookingDetails() {
   const { id } = useParams();
-  const { data, isPending, isError, error } = useUserBookings();
+  const { data, isPending, isError, error, refetch } = useUserBookings();
   const navigate = useNavigate();
-  const { startPayment } = useRazorpayPayment();
+  const { startPayment } = useRazorpayPayment(refetch);
   const booking = data?.booking.find((b) => b.id === id);
 
   useEffect(() => {

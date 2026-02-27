@@ -19,23 +19,24 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
 
         handler: async () => {
           toast.loading("Verifying payment...");
-
-          if (refetchBooking) {
-            const res = await refetchBooking();
-            const updated = res.data?.booking;
-
-            if (updated?.status === BookingStatus.CONFIRMED) {
-              toast.dismiss();
-              navigate("/mybooking");
-            }
+          if (!refetchBooking) {
+            return;
+          }
+          const res = await refetchBooking();
+          const updated = res.data?.booking;
+          if (updated?.status === BookingStatus.CONFIRMED) {
+            toast.success("Payment successful 🎉");
+            navigate("/mybooking");
+          } else {
+            toast("Payment processing. Please refresh in a moment.");
           }
         },
       };
 
       const razor = new (window as any).Razorpay(options);
       razor.open();
-    } catch {
-      toast.error("Payment failed");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.msg || "Payment Failed");
     }
   };
 

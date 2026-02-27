@@ -70,9 +70,9 @@ export default function AppRoutes() {
       <Route
         path="/mybooking"
         element={
-          <RoleRoute allowedRoles={["USER", "HOST"]}>
+          <ProtectedRoute>
             <MyBooking />
-          </RoleRoute>
+          </ProtectedRoute>
         }
       />
 
@@ -81,8 +81,22 @@ export default function AppRoutes() {
         path="/CalendarView/properties/:propertyId"
         element={<CalendarView />}
       />
-      <Route path="/booking/new" element={<BookingPage />} />
-      <Route path="/booking/:id" element={<BookingDetails />} />
+      <Route
+        path="/booking/new"
+        element={
+          <ProtectedRoute>
+            <BookingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/booking/:id"
+        element={
+          <ProtectedRoute>
+            <BookingDetails />
+          </ProtectedRoute>
+        }
+      />
       <Route
       // path="/host"
       // element={

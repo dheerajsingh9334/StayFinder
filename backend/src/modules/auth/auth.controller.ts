@@ -39,7 +39,13 @@ const generateRefreshToken = (userId: string, role: Role) => {
 const verifyRefreshToken = (token: string): AuthTokenPayload => {
   return jwt.verify(token, REFRESH_TOKEN_SECRET) as AuthTokenPayload;
 };
+const isProd = process.env.NODE_ENV === "production";
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProd, // true only in production (HTTPS)
+  sameSite: isProd ? ("none" as const) : ("lax" as const),
+};
 export default class AuthController {
   // !registerd
   static register = async (
@@ -71,16 +77,12 @@ export default class AuthController {
       const refreshToken = generateRefreshToken(user.id, user.role);
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -131,16 +133,12 @@ export default class AuthController {
       const refreshToken = generateRefreshToken(user.id, userRole);
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -165,7 +163,7 @@ export default class AuthController {
   static refreshToken = async (req: Request, res: Response) => {
     try {
       const refreshToken = req.cookies?.refreshToken;
-      // console.log(refreshToken);
+      console.log("refreshToken");
 
       if (!refreshToken) {
         return res.status(401).json({
@@ -177,9 +175,7 @@ export default class AuthController {
       const newAccessTOken = generateAccessToken(payload.userId, payload.role);
 
       res.cookie("accessToken", newAccessTOken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000,
       });
 
@@ -233,14 +229,10 @@ export default class AuthController {
   static logout = async (req: Request, res: Response) => {
     try {
       res.clearCookie("accessToken", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
       });
       res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
       });
 
       return res.status(200).json({
@@ -406,16 +398,12 @@ export default class AuthController {
       const refreshToken = generateRefreshToken(user.id, userRole);
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 

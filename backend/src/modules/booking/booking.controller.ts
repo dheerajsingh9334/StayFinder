@@ -190,7 +190,6 @@ export default class bookingController {
           capacity: true,
           totalPrice: true,
           status: true,
-          paymentId: true,
           user: {
             select: {
               id: true,
@@ -234,7 +233,6 @@ export default class bookingController {
           capacity: true,
           status: true,
           createdAt: true,
-          payment: true,
           property: {
             select: {
               id: true,
