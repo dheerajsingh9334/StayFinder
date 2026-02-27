@@ -36,7 +36,9 @@ export const useUserBookings = () => {
   return useQuery<GetUserBookingResponse>({
     queryKey: ["user-bookings"],
     queryFn: getUserBookingApi,
-    staleTime: 0,
+    staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
+    retry: 1,
+    enabled: true,
   });
 };

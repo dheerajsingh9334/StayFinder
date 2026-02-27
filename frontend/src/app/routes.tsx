@@ -13,6 +13,7 @@ import CalendarView from "../pages/availbility/CalenderView";
 import NearBy from "../pages/property/NearBy";
 import BookingPage from "../pages/booking/BookingPage";
 import BookingDetails from "../pages/booking/BookingDetails";
+import MyBooking from "../pages/booking/UserBookingPage";
 
 export default function AppRoutes() {
   return (
@@ -65,6 +66,16 @@ export default function AppRoutes() {
           </RoleRoute>
         }
       />
+
+      <Route
+        path="/mybooking"
+        element={
+          <RoleRoute allowedRoles={["USER", "HOST"]}>
+            <MyBooking />
+          </RoleRoute>
+        }
+      />
+
       <Route path="/properties/:id" element={<PropertyDetails />} />
       <Route
         path="/CalendarView/properties/:propertyId"

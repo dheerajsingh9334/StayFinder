@@ -234,6 +234,7 @@ export default class bookingController {
           capacity: true,
           status: true,
           createdAt: true,
+          payment: true,
           property: {
             select: {
               id: true,

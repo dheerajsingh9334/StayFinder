@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isloading } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   if (isloading) {
@@ -21,14 +21,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isloading } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   if (isloading) {
     return <div>Loading...</div>;
   }
   if (isAuthenticated) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -42,7 +42,7 @@ export const RoleRoute = ({
   children: React.ReactNode;
 }) => {
   const { isAuthenticated, isloading, user } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
   useEffect(() => {
     if (

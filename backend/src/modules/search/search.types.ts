@@ -13,3 +13,4 @@ export interface PropertySerachQuery {
   limit?: number;
   amenities?: string[];
 }
+// Add hasSome vs hasEvery toggle

@@ -19,8 +19,8 @@ export enum BookingStatus {
 
 export type UserBooking = {
   id: string;
-  startDate: string; // ISO string
-  endDate: string; // ISO string
+  startDate: string;
+  endDate: string;
   totalPrice: number;
   capacity: number;
   status: BookingStatus;
