@@ -1,4 +1,3 @@
-import { Response } from "express";
 import { AuthRequest } from "../auth/auth.types";
 import { BookintParams, CreateBookingBody } from "./booking.types";
 import prisma from "../../utils/dbconnect";
@@ -6,6 +5,7 @@ import { BookingStatus, PropertyStatus, Role } from "@prisma/client";
 import { autoCompleteBooking } from "../../utils/autocomplete";
 import eventBus from "../../event/event";
 import { BOOKING_EVENTS } from "../../event/booking.event";
+import { Request, Response } from "express";
 
 export default class bookingController {
   static createBooking = async (req: AuthRequest, res: Response) => {
