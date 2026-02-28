@@ -2,6 +2,7 @@ import type { NearByProperty } from "../../features/property/property.types";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import MapFollower from "./MapFollower";
 import LocateLiveBtn from "./lacateLiveBtn";
+import L from "leaflet";
 type props = {
   properties?: NearByProperty[];
   userLat?: number;
@@ -10,6 +11,19 @@ type props = {
 
 export default function MapView({ properties = [], userLat, userLng }: props) {
   if (!userLat || !userLng) return null;
+  const userIcon = new L.Icon({
+    iconUrl: "/user-marker.png",
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30],
+  });
+
+  const propertyIcon = new L.Icon({
+    iconUrl: "/property-marker.png",
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30],
+  });
   return (
     <MapContainer
       center={[userLat, userLng]}
@@ -22,15 +36,18 @@ export default function MapView({ properties = [], userLat, userLng }: props) {
       />
       <LocateLiveBtn lat={userLat} lng={userLng} />
       <MapFollower lat={userLat} lng={userLng} />
-      <Marker position={[userLat, userLng]}>
-        <Popup>
-          A pretty CSS3 popup. <br /> Easily customizable.
-        </Popup>
+      <Marker position={[userLat, userLng]} icon={userIcon}>
+        <Popup>You are here</Popup>
       </Marker>
 
       {properties.map((p) =>
         p.lat && p.lng ? (
-          <Marker key={p.id} position={[p.lat, p.lng]} title={p.title}>
+          <Marker
+            key={p.id}
+            position={[p.lat, p.lng]}
+            icon={propertyIcon}
+            title={p.title}
+          >
             <Popup>
               <div>
                 <strong>{p.title}</strong>
