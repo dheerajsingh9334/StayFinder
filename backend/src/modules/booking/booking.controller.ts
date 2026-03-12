@@ -367,7 +367,7 @@ export default class bookingController {
         where: { id: bookingId },
         data: { status: BookingStatus.COMPLETED },
       });
-      eventBus.emit(BOOKING_EVENTS.CONFIRMED, {
+      eventBus.emit(BOOKING_EVENTS.COMPLETED, {
         bookingId: completeBooking.id,
         userId: completeBooking.userId,
       });

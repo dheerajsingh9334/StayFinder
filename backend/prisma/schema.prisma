@@ -66,6 +66,7 @@ model User {
   updatedAt DateTime @updatedAt
 Otps Otp[]
 payments    Payment[]
+ isEmailVerified Boolean @default(false)
   properties   Property[]
   bookings     Booking[]
   reviews      Review[]
@@ -191,7 +192,7 @@ model Payment {
   user      User           @relation(fields: [userId], references: [id])
 
   orderId            String? @unique
-  providerPaymentId  String? @unique
+  providerPaymentId  String?
 
   amount    Float
   currency  String         @default("INR")

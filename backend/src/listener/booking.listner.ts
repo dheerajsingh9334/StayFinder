@@ -1,15 +1,43 @@
+import { error } from "node:console";
 import { BOOKING_EVENTS } from "../event/booking.event";
 import eventBus from "../event/event";
+import bookingController from "../modules/booking/booking.controller";
 import { sendEmail } from "../services/email.service";
 import prisma from "../utils/dbconnect";
 
-eventBus.on(BOOKING_EVENTS.CREATED, (data) => {
-  console.log("payment success Event", data);
+eventBus.on(BOOKING_EVENTS.CREATED, async ({ bookingId }) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        property: true,
+        user: true,
+      },
+    });
+    if (!booking) {
+      return;
+    }
+    await sendEmail({
+      from: booking.property.ownerId,
+      to: booking.user.email,
+      subject: "Booking Created please pay",
+      html: `  <h2>Your Booking is Created</h2>
+        <p>Location: ${booking.property.title}</p>
+        <p>City: ${booking.property.city}</p>
+        <p>From: ${booking.startDate.toDateString()}</p>
+        <p>To: ${booking.endDate.toDateString()}</p>
+        <p>Total: ₹${booking.totalPrice}</p>
+    `,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 eventBus.on(BOOKING_EVENTS.CANCELLED, (data) => {
   console.log("payment Cancled Event", data);
 });
+
 eventBus.on(BOOKING_EVENTS.CONFIRMED, async ({ bookingId }) => {
   try {
     const booking = await prisma.booking.findUnique({
@@ -23,6 +51,7 @@ eventBus.on(BOOKING_EVENTS.CONFIRMED, async ({ bookingId }) => {
       return;
     }
     await sendEmail({
+      from: booking.property.ownerId,
       to: booking.user.email,
       subject: "Booking Confiremd",
       html: `  <h2>Your Booking is Confirmed</h2>
@@ -52,6 +81,7 @@ eventBus.on(BOOKING_EVENTS.COMPLETED, async ({ bookingId }) => {
       return;
     }
     await sendEmail({
+      from: booking.property.ownerId,
       to: booking.user.email,
       subject: "how was your stay",
       html: `

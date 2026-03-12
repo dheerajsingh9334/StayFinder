@@ -11,16 +11,18 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendEmail = async ({
+  from,
   to,
   subject,
   html,
 }: {
+  from: string;
   to: string;
   subject: string;
   html: string;
 }) => {
   await transporter.sendMail({
-    from: `"Auth System" <${process.env.EMAIL_USER}>`,
+    from,
     to,
     subject,
     html,

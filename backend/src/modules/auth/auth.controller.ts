@@ -346,10 +346,22 @@ export default class AuthController {
       const { email } = req.body;
       const user = await prisma.user.findUnique({
         where: { email },
+        select: { id: true, isEmailVerified: true, email: true },
       });
+      // const isVerified = await prisma.user.findUnique({
+      //   where: { email },
+      //   select: { isEmailVerified: true },
+      // });
+
       if (!user) {
         return res.status(404).json({
           msg: "User not FOund",
+        });
+      }
+
+      if (user.isEmailVerified) {
+        return res.status(400).json({
+          msg: "User already verified",
         });
       }
 
@@ -371,14 +383,22 @@ export default class AuthController {
 
       const user = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          role: true,
+          isEmailVerified: true,
+        },
       });
-
-      const userRole: Role = user?.role as Role;
       if (!user) {
         return res.status(404).json({
           msg: "User not FOund",
         });
       }
+      if (user.isEmailVerified) {
+        return "Email already verified";
+      }
+      const userRole: Role = user?.role as Role;
+
       const recode = await prisma.otp.findFirst({
         where: {
           userId: user.id,
@@ -389,9 +409,14 @@ export default class AuthController {
       if (!recode) {
         return res.status(400).json({ msg: "Invalid or expired OTP" });
       }
-
-      await prisma.otp.delete({
-        where: { id: recode.id },
+      await prisma.$transaction(async (tx) => {
+        (await tx.user.update({
+          where: { id: user.id },
+          data: { isEmailVerified: true },
+        }),
+          await tx.otp.delete({
+            where: { id: recode.id },
+          }));
       });
 
       const accessToken = generateAccessToken(user.id, userRole);

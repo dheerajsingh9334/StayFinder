@@ -66,8 +66,10 @@ export default class PaymentWebhook {
         });
         console.log("BOOKING ID:", bookingId);
         eventBus.emit(PAYMENT_EVENTS.SUCCESS, {
+          paymentId: payment.id,
           bookingId,
           userId,
+          amount: payment.amount / 100, // Razorpay sends paise
         });
         eventBus.emit(BOOKING_EVENTS.CONFIRMED, {
           bookingId,
@@ -77,10 +79,11 @@ export default class PaymentWebhook {
 
       if (event === "payment.failed") {
         const payment = payload.payment.entity;
-        // const bookingId = payment.notes?.receipt;
+        const bookingId = payment.notes?.bookingId;
+        const userId = payment.notes?.userId;
         const orderId = payment.order_id;
 
-        await prisma.payment.update({
+        const updatedPayment = await prisma.payment.update({
           where: { orderId },
           data: {
             status: "FAILED",
@@ -89,7 +92,10 @@ export default class PaymentWebhook {
           },
         });
         eventBus.emit(PAYMENT_EVENTS.FAILED, {
-          failureReason: payment.error_description,
+          paymentId: payment.id,
+          bookingId: bookingId ?? updatedPayment.bookingId,
+          userId: userId ?? updatedPayment.userId,
+          reason: payment.error_description,
         });
       }
 

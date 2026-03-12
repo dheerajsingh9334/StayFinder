@@ -2,6 +2,9 @@ import { AuthRequest } from "../auth/auth.types";
 import prisma from "../../utils/dbconnect";
 import razorpay from "../../services/razorpay.service";
 import { Response } from "express";
+import eventBus from "../../event/event";
+import { BOOKING_EVENTS } from "../../event/booking.event";
+import { hostname } from "node:os";
 
 export default class PaymentController {
   static createPayment = async (req: AuthRequest, res: Response) => {
@@ -12,6 +15,7 @@ export default class PaymentController {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
       });
+      console.log("paymet are  called");
 
       if (!booking)
         return res.status(404).json({
@@ -52,8 +56,15 @@ export default class PaymentController {
           orderId: order.id,
           amount: booking.totalPrice,
           provider: "RAZORPAY",
+          providerPaymentId: "",
           status: "INITIATED",
         },
+      });
+      eventBus.emit("BOOKING_CONFIRMED", {
+        bookingId: booking.id,
+
+        userId: req.user.userId,
+        amount: booking.totalPrice,
       });
       return res.status(200).json({
         msg: "Order Success",
