@@ -4,6 +4,7 @@ import { connectDB } from "./src/utils/dbconnect";
 import router from "./src/routes/main.routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 dotenv.config();
 import "./src/listener/email.listner";
 import "./src/listener/payment.listeners";
@@ -12,6 +13,7 @@ import "./src/jobs/booking.crons";
 const PORT = process.env.PORT || 3000;
 const app = express();
 
+app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
 const allowedOrigins = [

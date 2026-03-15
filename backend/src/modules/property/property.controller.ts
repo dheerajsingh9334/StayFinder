@@ -106,7 +106,7 @@ export default class PropertyController {
   static getProperty = async (req: Request, res: Response) => {
     try {
       const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
+      const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
       const skip = (page - 1) * limit;
       const [property, total] = await Promise.all([
         prisma.property.findMany({

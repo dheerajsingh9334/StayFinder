@@ -113,6 +113,7 @@ model Property {
   reviews       Review[]
   favorites     Favorite[]
   availability  PropertyAvailability[]
+   @@index([status, createdAt])
 }
 
 model Booking {
