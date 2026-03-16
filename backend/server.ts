@@ -11,7 +11,7 @@ import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
 import "./src/jobs/booking.crons";
 import { redisClient } from "./src/config/redis";
-import { log } from "console";
+
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -49,7 +49,7 @@ async function start() {
     // console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
 
     app.listen(PORT, () =>
-      console.log(`Server running on http://localhost:${PORT}`),
+      console.log(`Worker ${process.pid} listening on port ${PORT}`),
     );
   } catch (error) {
     console.error("Failed to start server:", error);

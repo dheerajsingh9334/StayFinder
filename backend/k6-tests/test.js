@@ -5,11 +5,11 @@ export const options = {
   scenarios: {
     realistic_load: {
       executor: "constant-arrival-rate",
-      rate: 50, // 50 requests per second
+      rate: 10000, // requests per second
       timeUnit: "1s",
       duration: "30s",
-      preAllocatedVUs: 20,
-      maxVUs: 100,
+      preAllocatedVUs: 3000,
+      maxVUs: 5000,
     },
   },
 };
