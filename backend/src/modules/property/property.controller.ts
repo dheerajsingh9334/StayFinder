@@ -8,6 +8,7 @@ import {
 } from "./property.types";
 import prisma from "../../utils/dbconnect";
 import { count } from "console";
+import { redisClient } from "../../config/redis";
 
 export default class PropertyController {
   // ! CreateProperty
@@ -108,6 +109,14 @@ export default class PropertyController {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
       const skip = (page - 1) * limit;
+      const key = `property:list:${page}:${limit}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        console.log("cache hit");
+        return res.status(200).json(JSON.parse(cache));
+      }
+      console.log("cache miss - db hit");
+
       const [property, total] = await Promise.all([
         prisma.property.findMany({
           where: { status: PropertyStatus.ACTIVE },
@@ -133,13 +142,16 @@ export default class PropertyController {
         }),
         prisma.property.count({ where: { status: PropertyStatus.ACTIVE } }),
       ]);
-
-      return res.status(200).json({
+      const responseData = {
         page,
         limit,
         total,
         totalPage: Math.ceil(total / limit),
         data: property,
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      return res.status(200).json({
+        responseData,
       });
     } catch (error) {
       return res.status(400).json({

@@ -10,6 +10,8 @@ import "./src/listener/email.listner";
 import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
 import "./src/jobs/booking.crons";
+import { redisClient } from "./src/config/redis";
+import { log } from "console";
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -41,6 +43,9 @@ app.use("/api", router);
 async function start() {
   try {
     await connectDB();
+    const res = await redisClient.ping();
+    console.log("redis status", res);
+
     // console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
 
     app.listen(PORT, () =>
