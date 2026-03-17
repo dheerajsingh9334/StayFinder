@@ -6,9 +6,11 @@ import { autoCompleteBooking } from "../../utils/autocomplete";
 import eventBus from "../../event/event";
 import { BOOKING_EVENTS } from "../../event/booking.event";
 import { Request, Response } from "express";
+import { redisClient } from "../../config/redis";
 
 export default class bookingController {
   static createBooking = async (req: AuthRequest, res: Response) => {
+    let lockKey = "";
     try {
       if (!req.user) {
         return res.status(400).json({
@@ -17,9 +19,20 @@ export default class bookingController {
       }
       const { propertyId, startDate, endDate, capacity } =
         req.body as CreateBookingBody;
+
       if (!propertyId || !startDate || !endDate || capacity == null) {
         return res.status(400).json({
           msg: "missing credentials",
+        });
+      }
+      lockKey = `lock:booking:${propertyId}:${startDate}:${endDate}`;
+
+      const lock = await redisClient.set(lockKey, "locked", "PX", 5000, "NX");
+      if (!lock) {
+        console.log("Another booking in progress, try again");
+
+        return res.status(429).json({
+          msg: "Another booking in progress, try again",
         });
       }
       const start = new Date(startDate);
@@ -74,6 +87,7 @@ export default class bookingController {
           msg: "Property owner cannot book their own property",
         });
       }
+
       const blocked = await prisma.propertyAvailability.findFirst({
         where: {
           propertyId,
@@ -87,54 +101,66 @@ export default class bookingController {
         });
       }
 
-      const capacitySum = await prisma.booking.aggregate({
-        where: {
-          propertyId,
-          status: BookingStatus.CONFIRMED,
-          AND: [{ startDate: { lt: end } }, { endDate: { gt: start } }],
-        },
-        _sum: {
-          capacity: true,
-        },
-      });
+      const diff = end.getTime() - start.getTime();
+      const days = Math.ceil(diff / (1000 * 3600 * 24));
+      const totalPrice = property.price * days * capacity;
 
-      const usedCapacity = capacitySum._sum.capacity ?? 0;
-      const remaingCapacity = property.capacity - usedCapacity;
-
-      if (capacity > remaingCapacity) {
-        return res.status(409).json({
-          msg: "No enough rooms Available for selected dates",
+      const booking = await prisma.$transaction(async (tx) => {
+        const capacitySum = await tx.booking.aggregate({
+          where: {
+            propertyId,
+            status: BookingStatus.CONFIRMED,
+            AND: [{ startDate: { lt: end } }, { endDate: { gt: start } }],
+          },
+          _sum: { capacity: true },
         });
-      }
+        const usedCapacity = capacitySum._sum.capacity ?? 0;
+        const remainingCapacity = property.capacity - usedCapacity;
 
-      const price = property.price;
-      const diffMs = end.getTime() - start.getTime();
-      const days = Math.ceil(diffMs / (1000 * 3600 * 24));
-      const totalPrice = price * days * capacity;
+        if (capacity > remainingCapacity) {
+          throw new Error("NO_CAPACITY");
+        }
 
-      const booking = await prisma.booking.create({
-        data: {
-          userId: req.user.userId,
-          propertyId,
-          startDate: start,
-          endDate: end,
-          capacity,
-          totalPrice,
-          status: BookingStatus.PENDING_PAYMENT,
-        },
+        return await tx.booking.create({
+          data: {
+            userId: req.user!.userId,
+            propertyId,
+            startDate: start,
+            endDate: end,
+            capacity,
+            totalPrice,
+            status: BookingStatus.PENDING_PAYMENT,
+          },
+        });
+        isolationLevel: "Serializable";
       });
-      eventBus.emit("BOOKING_CREATED", {
-        bookingId: booking.id,
-        userId: req.user.userId,
-        amount: booking.totalPrice,
-      });
+
+      console.log("BOOKING CREATED", booking.id);
+      await Promise.all([
+        redisClient.incr(`calendar:version:${propertyId}`),
+        redisClient.incr(`availability:version:${propertyId}`),
+      ]);
+      // eventBus.emit("BOOKING_CREATED", {
+      //   bookingId: booking.id,
+      //   userId: req.user.userId,
+      //   amount: booking.totalPrice,
+      // });
       return res.status(201).json({
         msg: "Booking created successfully",
         booking,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === "NO_CAPACITY") {
+        return res.status(409).json({
+          msg: "No enough rooms Available",
+        });
+      }
       console.error("Create booking error", error);
       return res.status(500).json({ msg: "Server error" });
+    } finally {
+      if (lockKey) {
+        await redisClient.del(lockKey);
+      }
     }
   };
 
@@ -300,6 +326,11 @@ export default class bookingController {
         where: { id: bookingId },
         data: { status: BookingStatus.CANCELLED },
       });
+
+      await Promise.all([
+        redisClient.incr(`calendar:version:${booking.propertyId}`),
+        redisClient.incr(`availability:version:${booking.propertyId}`),
+      ]);
       eventBus.emit(BOOKING_EVENTS.CANCELLED, {
         bookingId: cancelled.id,
         userId: cancelled.userId,
@@ -367,6 +398,11 @@ export default class bookingController {
         where: { id: bookingId },
         data: { status: BookingStatus.COMPLETED },
       });
+
+      await Promise.all([
+        redisClient.incr(`calendar:version:${booking.propertyId}`),
+        redisClient.incr(`availability:version:${booking.propertyId}`),
+      ]);
       eventBus.emit(BOOKING_EVENTS.COMPLETED, {
         bookingId: completeBooking.id,
         userId: completeBooking.userId,

@@ -7,6 +7,7 @@ import {
 import { BookingStatus, PropertyStatus, Role } from "@prisma/client";
 import prisma from "../../utils/dbconnect";
 import { BlockTimeBody } from "./availability.types";
+import { redisClient } from "../../config/redis";
 
 export default class availabilityController {
   static blockTime = async (req: AuthRequest, res: Response) => {
@@ -51,6 +52,10 @@ export default class availabilityController {
           isBlocked: true,
         },
       });
+      await Promise.allSettled([
+        redisClient.incr(`calendar:version:${propertyId}`),
+        redisClient.incr(`availability:version:${propertyId}`),
+      ]);
 
       return res.status(200).json({
         msg: "Property blocked for selected date/time",
@@ -101,6 +106,11 @@ export default class availabilityController {
         orderBy: { startTime: "asc" },
       });
 
+      await Promise.all([
+        redisClient.incr(`calendar:version:${propertyId}`),
+        redisClient.incr(`availability:version:${propertyId}`),
+      ]);
+
       return res.status(200).json({ blocks });
     } catch (error) {
       console.error("Get availability error", error);
@@ -115,7 +125,14 @@ export default class availabilityController {
     try {
       const { propertyId } = req.params;
       const { startDate, endDate } = req.query;
-
+      const version = (await redisClient.get("calender:version")) || "1";
+      const key = `calender:v${version}:${propertyId}:${startDate}:${endDate}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        console.log("calendar cache hit");
+        return res.json(JSON.parse(cache));
+      }
+      console.log("calendar cache miss");
       if (!propertyId) {
         return res.status(400).json({ msg: "Mising params" });
       }
@@ -209,10 +226,9 @@ export default class availabilityController {
         });
         cursor = dayEnd;
       }
-      return res.json({
-        propertyId,
-        calender,
-      });
+      const responseData = { propertyId, calender };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      return res.json(responseData);
     } catch (error) {
       return res.status(500).json({ msg: "Server Error" });
     }
@@ -227,6 +243,15 @@ export default class availabilityController {
       const { startDate, endDate } = req.query;
       const start = new Date(startDate);
       const end = new Date(endDate);
+      const version = (await redisClient.get("availability:version")) || "1";
+      const key = `availability:v${version}:${propertyId}:${startDate}:${endDate}`;
+      const cache = await redisClient.get(key);
+
+      if (cache) {
+        console.log("bookingAvailability cache hit");
+        return res.status(200).json(JSON.parse(cache));
+      }
+      console.log("bookingAvailability cache miss");
       if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
         return res.status(400).json({
           msg: "Invalid date range",
@@ -295,8 +320,7 @@ export default class availabilityController {
         // if (remaining === 0) status = "SOLD_OUT";
         // else if (remaining < property.capacity) status = "LIMITED";
         // else status = "AVAILABLE";
-
-        return res.status(200).json({
+        const responseData = {
           status:
             remaining === 0
               ? "SOLD_OUT"
@@ -304,7 +328,10 @@ export default class availabilityController {
                 ? "LIMITED"
                 : "AVAILABLE",
           maxBookingCapacity: Math.max(remaining, 0),
-        });
+        };
+
+        await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+        return res.status(200).json(responseData);
       }
     } catch (error) {
       console.error("Availability error", error);

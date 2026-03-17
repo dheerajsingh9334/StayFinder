@@ -5,7 +5,7 @@ export const options = {
   scenarios: {
     heavy_parallel: {
       executor: "constant-arrival-rate",
-      rate: 8000,
+      rate: 1000,
       timeUnit: "1s",
       duration: "30s",
       preAllocatedVUs: 1500,
@@ -16,9 +16,15 @@ export const options = {
 
 export default function () {
   const responses = http.batch([
-    ["GET", "http://localhost:3000/api/property"],
-    ["GET", "http://localhost:3000/api/property/693f33eff2ac5a4e889c4d00"],
-    ["GET", "http://localhost:3000/api/property/nearby?lat=28.61&lng=77.23"],
+    ["GET", "https://stayfinder-o92q.onrender.com/api/property"],
+    [
+      "GET",
+      "https://stayfinder-o92q.onrender.com/api/property/693f33eff2ac5a4e889c4d00",
+    ],
+    [
+      "GET",
+      "https://stayfinder-o92q.onrender.com/api/property/nearby?lat=28.61&lng=77.23",
+    ],
   ]);
 
   check(responses[0], { "list ok": (r) => r.status === 200 });
