@@ -114,6 +114,9 @@ model Property {
   favorites     Favorite[]
   availability  PropertyAvailability[]
    @@index([status, createdAt])
+   @@index([ownerId, status])
+   @@index([lat, lng])
+   @@index([ownerId])
 }
 
 model Booking {

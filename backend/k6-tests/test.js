@@ -1,23 +1,27 @@
 import http from "k6/http";
-import { check, sleep } from "k6";
+import { check } from "k6";
 
 export const options = {
   scenarios: {
-    realistic_load: {
+    heavy_parallel: {
       executor: "constant-arrival-rate",
-      rate: 10000, // requests per second
+      rate: 8000,
       timeUnit: "1s",
       duration: "30s",
-      preAllocatedVUs: 3000,
-      maxVUs: 5000,
+      preAllocatedVUs: 1500,
+      maxVUs: 6000,
     },
   },
 };
 
 export default function () {
-  const res = http.get("http://localhost:3000/api/property");
+  const responses = http.batch([
+    ["GET", "http://localhost:3000/api/property"],
+    ["GET", "http://localhost:3000/api/property/693f33eff2ac5a4e889c4d00"],
+    ["GET", "http://localhost:3000/api/property/nearby?lat=28.61&lng=77.23"],
+  ]);
 
-  check(res, {
-    "status is 200": (r) => r.status === 200,
-  });
+  check(responses[0], { "list ok": (r) => r.status === 200 });
+  check(responses[1], { "single ok": (r) => r.status === 200 });
+  check(responses[2], { "nearby ok": (r) => r.status === 200 });
 }

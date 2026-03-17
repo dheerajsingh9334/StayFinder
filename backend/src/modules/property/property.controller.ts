@@ -7,7 +7,6 @@ import {
   updatePropertyBody,
 } from "./property.types";
 import prisma from "../../utils/dbconnect";
-import { count } from "console";
 import { redisClient } from "../../config/redis";
 
 export default class PropertyController {
@@ -92,6 +91,9 @@ export default class PropertyController {
           ownerId: req.user.userId,
         },
       });
+
+      await redisClient.incr("property:version");
+
       return res.status(201).json({
         msg: "Property Create Successfully",
         property,
@@ -109,13 +111,14 @@ export default class PropertyController {
       const page = Math.max(1, Number(req.query.page) || 1);
       const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
       const skip = (page - 1) * limit;
-      const key = `property:list:${page}:${limit}`;
+      const version = (await redisClient.get("property:version")) || "1";
+      const key = `property:v${version}:list:${page}:${limit}`;
       const cache = await redisClient.get(key);
       if (cache) {
-        console.log("cache hit");
+        console.log(" get All cache hit");
         return res.status(200).json(JSON.parse(cache));
       }
-      console.log("cache miss - db hit");
+      console.log(" get All cache miss - db hit");
 
       const [property, total] = await Promise.all([
         prisma.property.findMany({
@@ -142,17 +145,19 @@ export default class PropertyController {
         }),
         prisma.property.count({ where: { status: PropertyStatus.ACTIVE } }),
       ]);
+      const formate = property.map((p) => ({
+        ...p,
+        images: p.images?.slice(0, 1),
+      }));
       const responseData = {
         page,
         limit,
         total,
         totalPage: Math.ceil(total / limit),
-        data: property,
+        data: formate,
       };
       await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
-      return res.status(200).json({
-        responseData,
-      });
+      return res.status(200).json(responseData);
     } catch (error) {
       return res.status(400).json({
         msg: "Server error",
@@ -168,6 +173,14 @@ export default class PropertyController {
           msg: "Id is missing",
         });
       }
+      const version = (await redisClient.get("property:version")) || "1";
+      const key = `property:v${version}:details:${id}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        console.log("property details cache hit");
+        return res.status(200).json(JSON.parse(cache));
+      }
+      console.log("property details cache miss");
       const property = await prisma.property.findUnique({
         where: { id },
         include: {
@@ -179,7 +192,7 @@ export default class PropertyController {
               phone: true,
             },
           },
-          availability: true,
+          // availability: true,
         },
       });
 
@@ -189,15 +202,16 @@ export default class PropertyController {
         });
       }
 
-      if (property.status === PropertyStatus.ACTIVE) {
+      if (property.status !== PropertyStatus.ACTIVE) {
         return res.status(200).json({
           property: property as PropertyResponse,
         });
       }
-
-      return res.status(200).json({
+      const responseData = {
         property: property as PropertyResponse,
-      });
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      return res.status(200).json(responseData);
     } catch (error) {
       console.error("Get single property error", error);
       return res.status(500).json({
@@ -273,6 +287,8 @@ export default class PropertyController {
         },
       });
 
+      await redisClient.incr("property:version");
+
       return res.status(200).json({
         msg: "Property updated successfully",
         property: updatedProperty,
@@ -329,6 +345,8 @@ export default class PropertyController {
           status: PropertyStatus.DELETED,
         },
       });
+
+      await redisClient.incr("property:version");
       return res.status(200).json({
         msg: "Property deleted successsfully",
         property: updateProperty,
@@ -355,6 +373,15 @@ export default class PropertyController {
       const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
       const skip = (page - 1) * limit;
       console.log(req.user.userId);
+      const version = (await redisClient.get("property:version")) || "1";
+      const key = `property:v${version}:owner:${req.user.userId}:${page}:${limit}`;
+      const cache = await redisClient.get(key);
+
+      if (cache) {
+        console.log("ownerProperty cache hit");
+        return res.status(200).json(JSON.parse(cache));
+      }
+      console.log("OwnerProperty cache miss");
 
       const [properties, total, groupedCounts] = await Promise.all([
         prisma.property.findMany({
@@ -450,7 +477,8 @@ export default class PropertyController {
       //     msg: "property id not found",
       //   });
       // }
-      return res.status(200).json({
+
+      const responseData = {
         msg: "My Property",
         counts,
         total,
@@ -458,7 +486,9 @@ export default class PropertyController {
         page,
         limit,
         data: properties,
-      });
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 45);
+      return res.status(200).json(responseData);
     } catch (error) {
       console.error("owner Property error", error);
       return res.status(500).json({
@@ -528,6 +558,7 @@ export default class PropertyController {
         where: { id },
         data: { status: newStatus },
       });
+      await redisClient.incr("property:version");
       return res.status(200).json({
         msg: `Property Marked as a ${newStatus}`,
         property: updateProperty,
@@ -550,8 +581,16 @@ export default class PropertyController {
       const lng = Number(req.query.lng);
       const radius = Number(req.query.radius) || 0.1;
       const limit = Math.min(50, Number(req.query.limit)) || 20;
+      const version = (await redisClient.get("property:version")) || "1";
+      const key = `property:v${version}:nearby:${lat}:${lng}:${radius}:${limit}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        console.log("useLocation cache hit");
+        return res.status(200).json(JSON.parse(cache));
+      }
+      console.log("useLocation cache miss");
 
-      if (!lat || !lng) {
+      if (isNaN(lat) || isNaN(lng)) {
         return res.status(400).json({
           msg: "Latitude and Longitude are required",
         });
@@ -585,10 +624,12 @@ export default class PropertyController {
           state: true,
         },
       });
-      return res.status(200).json({
+      const responseData = {
         count: properties.length,
         data: properties,
-      });
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      return res.status(200).json(responseData);
     } catch (error) {
       console.error("getNearby error", error);
       return res.status(500).json({
