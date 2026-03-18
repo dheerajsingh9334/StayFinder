@@ -2,16 +2,45 @@ import { AuthRequest } from "../auth/auth.types";
 import prisma from "../../utils/dbconnect";
 import razorpay from "../../services/razorpay.service";
 import { Response } from "express";
-import eventBus from "../../event/event";
-import { BOOKING_EVENTS } from "../../event/booking.event";
-import { hostname } from "node:os";
+import { redisClient } from "../../config/redis";
 
 export default class PaymentController {
   static createPayment = async (req: AuthRequest, res: Response) => {
+    let lockKey = "";
     try {
+      console.log("PAYMENT API HIT");
       if (!req.user) return res.status(401).json({ msg: "Unauthorized" });
       const { bookingId } = req.body;
       const userId = req.user.userId;
+
+      const idempotencyKey = req.headers["idempotency-key"] as string;
+
+      if (!idempotencyKey) {
+        return res.status(400).json({
+          msg: "missing idempotency key",
+        });
+      }
+
+      const existinResponse = await redisClient.get(
+        `payment:idempotency:${idempotencyKey}`,
+      );
+
+      if (existinResponse) {
+        return res.status(200).json(JSON.parse(existinResponse));
+      }
+      lockKey = `lock:payment:${bookingId}`;
+      const lock = await redisClient.set(lockKey, "locked", "PX", 10000, "NX");
+      if (!lock) {
+        return res.status(429).json({
+          msg: "Payment already in progress",
+        });
+      }
+
+      if (!bookingId)
+        return res.status(404).json({
+          msg: "Booking not Found",
+        });
+
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
       });
@@ -36,8 +65,12 @@ export default class PaymentController {
         },
       });
       if (existingPaymentInitiated) {
-        return res.status(400).json({
-          msg: "Payment already initiated",
+        return res.status(200).json({
+          msg: "Existing payment",
+          orderId: existingPaymentInitiated.orderId,
+          amount: existingPaymentInitiated.amount * 100,
+          currency: "INR",
+          key: process.env.RAZORPAY_KEY_ID,
         });
       }
       const order = await razorpay.orders.create({
@@ -56,30 +89,38 @@ export default class PaymentController {
           orderId: order.id,
           amount: booking.totalPrice,
           provider: "RAZORPAY",
-          providerPaymentId: "",
+          // providerPaymentId: null,
           status: "INITIATED",
         },
       });
-      eventBus.emit("BOOKING_CONFIRMED", {
-        bookingId: booking.id,
 
-        userId: req.user.userId,
-        amount: booking.totalPrice,
-      });
-      return res.status(200).json({
+      const responseData = {
         msg: "Order Success",
         orderId: order.id,
         amount: order.amount,
         currncy: order.currency,
         key: process.env.RAZORPAY_KEY_ID,
         // status: order.status,
-      });
+      };
+
+      await redisClient.set(
+        `payment:idempotency:${idempotencyKey}`,
+        JSON.stringify(responseData),
+        "EX",
+        300,
+      );
+
+      return res.status(200).json(responseData);
     } catch (err: any) {
       console.error("RAZORPAY ERROR:", err);
       return res.status(500).json({
         msg: "Payment initialization error",
         error: err?.error || err,
       });
+    } finally {
+      if (lockKey) {
+        await redisClient.del(lockKey);
+      }
     }
   };
 }

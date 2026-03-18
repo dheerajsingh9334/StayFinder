@@ -2,7 +2,7 @@ import { BookingStatus } from "@prisma/client";
 import prisma from "./dbconnect";
 
 export const cancleExpireBooking = async () => {
-  const expiry = new Date(Date.now() - 15 * 60 * 1000);
+  const expiry = new Date(Date.now() - 10 * 60 * 1000);
 
   await prisma.booking.updateMany({
     where: {

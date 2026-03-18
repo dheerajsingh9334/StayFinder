@@ -52,9 +52,9 @@ export default class availabilityController {
           isBlocked: true,
         },
       });
-      await Promise.allSettled([
-        redisClient.incr(`calendar:version:${propertyId}`),
-        redisClient.incr(`availability:version:${propertyId}`),
+      await Promise.all([
+        await redisClient.incr(`calendar:version:${propertyId}`),
+        await redisClient.incr(`availability:version:${propertyId}`),
       ]);
 
       return res.status(200).json({
@@ -243,6 +243,7 @@ export default class availabilityController {
       const { startDate, endDate } = req.query;
       const start = new Date(startDate);
       const end = new Date(endDate);
+
       const version = (await redisClient.get("availability:version")) || "1";
       const key = `availability:v${version}:${propertyId}:${startDate}:${endDate}`;
       const cache = await redisClient.get(key);

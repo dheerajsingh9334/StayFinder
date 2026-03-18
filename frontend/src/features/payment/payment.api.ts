@@ -7,6 +7,10 @@ import type {
 export const CreatePaymentApi = async (
   data: CreatepaymentPayload,
 ): Promise<CreatePaymentResponse> => {
-  const res = await paymentServices.createPayment(data);
-  return res.data;
+  try {
+    const res = await paymentServices.createPayment(data);
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.msg || "Payment request failed");
+  }
 };

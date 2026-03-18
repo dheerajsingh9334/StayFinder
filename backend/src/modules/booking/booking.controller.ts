@@ -27,7 +27,7 @@ export default class bookingController {
       }
       lockKey = `lock:booking:${propertyId}:${startDate}:${endDate}`;
 
-      const lock = await redisClient.set(lockKey, "locked", "PX", 5000, "NX");
+      const lock = await redisClient.set(lockKey, "locked", "PX", 10000, "NX");
       if (!lock) {
         console.log("Another booking in progress, try again");
 
@@ -60,10 +60,24 @@ export default class bookingController {
           msg: "Capacity must be at least 1",
         });
       }
+      const version =
+        (await redisClient.get(`property:version:${propertyId}`)) || "1";
+      const key = `property:${propertyId}:v${version}`;
+      let property = null;
 
-      const property = await prisma.property.findUnique({
-        where: { id: propertyId },
-      });
+      const cache = await redisClient.get(key);
+
+      if (cache) {
+        property = JSON.parse(cache); // 🔥 convert string → object
+      } else {
+        property = await prisma.property.findUnique({
+          where: { id: propertyId },
+        });
+
+        if (property) {
+          await redisClient.set(key, JSON.stringify(property), "EX", 60);
+        }
+      }
 
       if (!property) {
         return res.status(404).json({
@@ -88,13 +102,28 @@ export default class bookingController {
         });
       }
 
-      const blocked = await prisma.propertyAvailability.findFirst({
-        where: {
-          propertyId,
-          AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
-        },
-      });
+      const ver =
+        (await redisClient.get(`availability:version:${propertyId}`)) || "1";
 
+      const availabilityKey = `availability:${propertyId}:v${ver}:${startDate}:${endDate}`;
+      let blocked = null;
+      const blockcache = await redisClient.get(availabilityKey);
+      if (blockcache !== null) {
+        blocked = JSON.parse(blockcache);
+      } else {
+        blocked = await prisma.propertyAvailability.findFirst({
+          where: {
+            propertyId,
+            AND: [{ startTime: { lt: end } }, { endTime: { gt: start } }],
+          },
+        });
+        await redisClient.set(
+          availabilityKey,
+          JSON.stringify(blocked),
+          "EX",
+          30,
+        );
+      }
       if (blocked) {
         return res.status(409).json({
           msg: "Property is blocked for selected dates",
@@ -139,12 +168,13 @@ export default class bookingController {
       await Promise.all([
         redisClient.incr(`calendar:version:${propertyId}`),
         redisClient.incr(`availability:version:${propertyId}`),
+        redisClient.incr(`user:booking:version:${req.user.userId}`),
       ]);
-      // eventBus.emit("BOOKING_CREATED", {
-      //   bookingId: booking.id,
-      //   userId: req.user.userId,
-      //   amount: booking.totalPrice,
-      // });
+      eventBus.emit("BOOKING_CREATED", {
+        bookingId: booking.id,
+        userId: req.user.userId,
+        amount: booking.totalPrice,
+      });
       return res.status(201).json({
         msg: "Booking created successfully",
         booking,
@@ -247,6 +277,17 @@ export default class bookingController {
         });
       }
 
+      const version =
+        (await redisClient.get(`user:booking:version:${req.user.userId}`)) ||
+        "1";
+
+      const key = `user:booking:${req.user.userId}:v${version}`;
+
+      const cache = await redisClient.get(key);
+
+      if (cache) {
+        return res.status(200).json(JSON.parse(cache));
+      }
       const booking = await prisma.booking.findMany({
         where: {
           userId: req.user.userId,
@@ -278,10 +319,14 @@ export default class bookingController {
         });
       }
 
-      return res.status(200).json({
+      const responseData = {
         msg: "Booking",
         booking,
-      });
+      };
+
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+
+      return res.status(200).json(responseData);
     } catch (error) {
       console.error("Get Userbooking error", error);
       return res.status(500).json({ msg: "Server error" });
@@ -330,6 +375,7 @@ export default class bookingController {
       await Promise.all([
         redisClient.incr(`calendar:version:${booking.propertyId}`),
         redisClient.incr(`availability:version:${booking.propertyId}`),
+        redisClient.incr(`user:booking:version:${booking.userId}`),
       ]);
       eventBus.emit(BOOKING_EVENTS.CANCELLED, {
         bookingId: cancelled.id,
@@ -402,6 +448,7 @@ export default class bookingController {
       await Promise.all([
         redisClient.incr(`calendar:version:${booking.propertyId}`),
         redisClient.incr(`availability:version:${booking.propertyId}`),
+        redisClient.incr(`user:booking:version:${booking.userId}`),
       ]);
       eventBus.emit(BOOKING_EVENTS.COMPLETED, {
         bookingId: completeBooking.id,

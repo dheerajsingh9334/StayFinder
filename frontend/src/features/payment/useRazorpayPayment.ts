@@ -9,8 +9,17 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
 
   const startPayment = async (bookingId: string) => {
     try {
-      const payment = await createPayment.mutateAsync({ bookingId });
-
+      if (createPayment.isPending) return;
+      const key = `payment:${bookingId}`;
+      let idempotencyKey = sessionStorage.getItem(key);
+      if (!idempotencyKey) {
+        idempotencyKey = crypto.randomUUID();
+        sessionStorage.setItem(key, idempotencyKey);
+      }
+      const payment = await createPayment.mutateAsync({
+        bookingId,
+        idempotencyKey,
+      });
       const options = {
         key: payment.key,
         amount: payment.amount,

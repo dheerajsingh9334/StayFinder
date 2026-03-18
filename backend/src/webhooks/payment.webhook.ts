@@ -6,6 +6,7 @@ import prisma from "../utils/dbconnect";
 import { PAYMENT_EVENTS } from "../event/payment.event";
 import eventBus from "../event/event";
 import { BOOKING_EVENTS } from "../event/booking.event";
+import { redisClient } from "../config/redis";
 
 export default class PaymentWebhook {
   static handle = async (req: Request, res: Response) => {
@@ -37,15 +38,16 @@ export default class PaymentWebhook {
           return res.status(400).json({ msg: "Invalid metadata" });
         }
 
-        const existingPayment = await prisma.payment.findFirst({
-          where: { providerPaymentId: payment.id },
-        });
+        const key = `payment:webhook:${payment.id}`;
+        const AlreadyProcessed = await redisClient.get(key);
 
-        if (existingPayment) {
+        if (AlreadyProcessed) {
           return res.json({
-            msg: "Already Proceed",
+            msg: "Already Processed",
           });
         }
+
+        await redisClient.set(key, "done", "EX", 600);
         await prisma.$transaction(async (tx) => {
           const createdPayment = await tx.payment.update({
             where: { orderId },

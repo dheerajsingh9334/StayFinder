@@ -9,6 +9,7 @@ export type CreatePaymentResponse = {
 
 export type CreatepaymentPayload = {
   bookingId: string;
+  idempotencyKey: string;
 };
 
 export enum PaymentStatus {

@@ -6,5 +6,15 @@ import { api } from "./api";
 
 export const paymentServices = {
   createPayment: (data: CreatepaymentPayload) =>
-    api.post<CreatePaymentResponse>("/payment/create", data),
+    api.post<CreatePaymentResponse>(
+      "/payment/create",
+      {
+        bookingId: data.bookingId,
+      },
+      {
+        headers: {
+          "idempotency-key": data.idempotencyKey,
+        },
+      },
+    ),
 };
