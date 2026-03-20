@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { PropertySerachQuery } from "./search.types";
 import { validatePropertySearchQuery } from "./search.validation";
 import { searchProperty } from "./search.services";
-import { parseSearchQueryAI } from "./aisearchparser";
+
+import { redisClient } from "../../config/redis";
+import { addAiSearchJob } from "../../jobs/ai.job";
 
 export default class SearchController {
   static searchProperty = async (req: Request, res: Response) => {
@@ -14,14 +16,19 @@ export default class SearchController {
         query.amenities = rawAmenities.split(",").map((a) => a.trim());
       }
       validatePropertySearchQuery(query);
-
+      const key = `search:${JSON.stringify(query)}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        return res.status(200).json(JSON.parse(cache));
+      }
       const properties = await searchProperty(query);
-
-      return res.status(200).json({
+      const responseData = {
         msg: "Property featched successfully",
         count: properties.count,
         data: properties,
-      });
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 300);
+      return res.status(200).json(responseData);
     } catch (error: any) {
       console.error("Search Controller error");
       return res.status(500).json({
@@ -38,24 +45,40 @@ export default class SearchController {
         return res.status(400).json({ msg: "Search text is required" });
       }
 
-      const query: PropertySerachQuery = await parseSearchQueryAI(text);
+      const normalized = text.toLowerCase().replace(/\s+/g, " ").trim();
+      const key = `ai:result:${normalized}`;
 
-      console.log("Parsed Query:", query);
-
-      // validatePropertySearchQuery(query);
-
-      const properties = await searchProperty(query);
-      if (!query || typeof query !== "object") {
-        return res.status(400).json({ msg: "Invalid parsed query" });
+      // 🔥 STEP 1: check cache
+      let cache = await redisClient.get(key);
+      if (cache) {
+        console.log("✅ Cache HIT");
+        return res.status(200).json(JSON.parse(cache));
       }
-      return res.status(200).json({
-        msg: "Property featched successfully",
-        count: properties.count,
-        data: properties,
-      });
+
+      console.log("❌ Cache MISS");
+
+      // 🔥 STEP 2: add job (only once)
+      await addAiSearchJob(normalized);
+
+      // // 🔥 STEP 3: wait for worker (THIS IS THE REAL FIX)
+      // for (let i = 0; i < 10; i++) {
+      //   await new Promise((r) => setTimeout(r, 500)); // wait 500ms
+      const result = await Promise.race([
+        (async () => {
+          while (true) {
+            const cache = await redisClient.get(key);
+            if (cache) return JSON.parse(cache);
+            await new Promise((r) => setTimeout(r, 500));
+          }
+        })(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 5000),
+        ),
+      ]);
+
+      return res.status(200).json(result);
     } catch (error) {
       console.log(error);
-
       return res.status(500).json({ msg: "AI search failed" });
     }
   };

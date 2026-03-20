@@ -1,10 +1,19 @@
 import Redis from "ioredis";
 
-export const redisClient = new Redis(process.env.REDIS_URL!);
-redisClient.on("connect", () => {
-  console.log("redis COnnected");
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not defined");
+}
+
+export const redisClient = new Redis(redisUrl, {
+  db: 0,
+  maxRetriesPerRequest: null,
 });
 
-redisClient.on("error", (err) => {
-  console.log("redis error", err);
-});
+export const redisConnection = {
+  connection: {
+    url: redisUrl,
+    db: 0,
+  },
+};

@@ -9,6 +9,7 @@ import {
 import prisma from "../../utils/dbconnect";
 import { BookingStatus, ReviewStatus, Role } from "@prisma/client";
 import { error } from "console";
+import { redisClient } from "../../config/redis";
 
 export default class ReviewsControlller {
   static addReviews = async (req: AuthRequest, res: Response) => {
@@ -26,7 +27,12 @@ export default class ReviewsControlller {
       }
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { property: true },
+        select: {
+          userId: true,
+          status: true,
+          endDate: true,
+          propertyId: true,
+        },
       });
       if (!booking) {
         return res.status(404).json({
@@ -51,25 +57,17 @@ export default class ReviewsControlller {
           msg: "Review period expired",
         });
       }
-      const existingreviews = await prisma.review.findUnique({
-        where: { bookingId },
-      });
-      if (existingreviews) {
-        return res.status(400).json({
-          msg: "You have already Review this property",
-        });
-      }
+
       if (rating < 1 || rating > 5) {
         return res.status(400).json({
           msg: "Invalid rating value",
         });
       }
 
-      const Emptycomment = comment ?? "";
-
       const review = await prisma.$transaction(async (tx) => {
         const property = await tx.property.findUnique({
           where: { id: booking.propertyId },
+          select: { reviewCount: true, averageRating: true },
         });
 
         if (!property) {
@@ -78,7 +76,7 @@ export default class ReviewsControlller {
         const newReview = await tx.review.create({
           data: {
             rating,
-            comment: Emptycomment,
+            comment: comment ?? "",
             userId: booking.userId,
             bookingId,
             propertyId: booking.propertyId,
@@ -90,7 +88,7 @@ export default class ReviewsControlller {
           newReviewCount;
 
         await tx.property.update({
-          where: { id: property.id },
+          where: { id: booking.propertyId },
           data: {
             reviewCount: newReviewCount,
             averageRating: newAverageRating,
@@ -98,7 +96,11 @@ export default class ReviewsControlller {
         });
         return newReview;
       });
+      redisClient.incr("reviews:version").catch(console.error);
 
+      redisClient
+        .incr(`review:user:${req.user.userId}:version`)
+        .catch(console.error);
       return res.status(201).json({
         msg: "Review created successfully",
         review: review,
@@ -122,7 +124,14 @@ export default class ReviewsControlller {
           msg: "PropertyId is required",
         });
       }
-
+      const version =
+        (await redisClient.get(`reviews:property:${propertyId}:version`)) ||
+        "1";
+      const key = `reviews:property:${propertyId}:v:${version}:page:${page}:limit:${limit}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        return res.status(200).json(JSON.parse(cache));
+      }
       const [review, total] = await Promise.all([
         prisma.review.findMany({
           where: {
@@ -134,7 +143,11 @@ export default class ReviewsControlller {
           orderBy: {
             createdAt: "desc",
           },
-          include: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
             user: {
               select: {
                 id: true,
@@ -149,15 +162,18 @@ export default class ReviewsControlller {
         }),
       ]);
 
-      // if (review.length === 0) {
-      return res.status(200).json({
+      const responseData = {
         total,
         page,
         limit,
         totalPage: Math.ceil(total / limit),
         reviews: review,
         msg: "No reviews Yet",
-      });
+      };
+
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      // if (review.length === 0) {
+      return res.status(200).json(responseData);
 
       // }
     } catch (error) {
@@ -177,6 +193,15 @@ export default class ReviewsControlller {
           msg: "Unauthorized",
         });
       }
+
+      const version =
+        (await redisClient.get(`review:user:${req.user.userId}:version`)) ||
+        "1";
+      const key = `review:user:${req.user.userId}:v:${version}`;
+      const cache = await redisClient.get(key);
+      if (cache) {
+        return res.status(200).json(JSON.parse(cache));
+      }
       const myReviews = await prisma.review.findMany({
         where: { userId: req.user.userId, status: ReviewStatus.PUBLISHED },
         orderBy: {
@@ -193,11 +218,12 @@ export default class ReviewsControlller {
           },
         },
       });
-
-      return res.status(201).json({
+      const responseData = {
         msg: "Review Fetch successfully",
         myReviews,
-      });
+      };
+      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      return res.status(201).json(responseData);
     } catch (error) {
       console.error("myReviews", error);
       return res.status(500).json({
@@ -256,13 +282,37 @@ export default class ReviewsControlller {
         });
       }
 
-      const updateReviews = await prisma.review.update({
-        where: { id: reviewId },
-        data: {
-          status: ReviewStatus.HIDDEN,
-        },
+      const updateReviews = await prisma.$transaction(async (tx) => {
+        const property = await tx.property.findUnique({
+          where: { id: myReviews.propertyId },
+          select: { reviewCount: true, averageRating: true },
+        });
+        if (!property) throw new Error("property not found");
+        const newCount = property.reviewCount - 1;
+        const newAvg =
+          newCount === 0
+            ? 0
+            : (property.averageRating * property.reviewCount -
+                myReviews.rating) /
+              newCount;
+        await tx.property.update({
+          where: { id: myReviews.propertyId },
+          data: {
+            reviewCount: newCount,
+            averageRating: newAvg,
+          },
+        });
+        await tx.review.update({
+          where: { id: reviewId },
+          data: { status: ReviewStatus.HIDDEN },
+        });
       });
-
+      redisClient
+        .incr(`reviews:property:${myReviews.propertyId}:version`)
+        .catch(console.error);
+      redisClient
+        .incr(`review:user:${req.user.userId}:version`)
+        .catch(console.error);
       return res.status(200).json({
         msg: "Review deleted successfully",
         updateReviews,
@@ -297,7 +347,7 @@ export default class ReviewsControlller {
 
       const myReviews = await prisma.review.findFirst({
         where: { id: reviewId, status: ReviewStatus.PUBLISHED },
-        include: { property: true },
+        // include: { property: true },
       });
 
       if (!myReviews) {
@@ -314,7 +364,7 @@ export default class ReviewsControlller {
 
       const reviewEditDeadLine = new Date(myReviews.createdAt);
       reviewEditDeadLine.setDate(
-        reviewEditDeadLine.getDate() + EDIT_REVIEW_WINDOW_DAYS
+        reviewEditDeadLine.getDate() + EDIT_REVIEW_WINDOW_DAYS,
       );
 
       if (new Date() > reviewEditDeadLine) {
@@ -332,6 +382,7 @@ export default class ReviewsControlller {
       const updatedreview = await prisma.$transaction(async (tx) => {
         const property = await tx.property.findUnique({
           where: { id: myReviews.propertyId },
+          select: { reviewCount: true, averageRating: true },
         });
 
         if (!property) {
@@ -340,43 +391,32 @@ export default class ReviewsControlller {
           });
         }
 
-        if (property.reviewCount === 0) {
-          return res.status(404).json({
-            msg: " Reviews not Exist ",
-          });
-        }
-
-        const existReviews = await tx.review.findFirst({
-          where: { id: reviewId, status: ReviewStatus.PUBLISHED },
-        });
-
-        if (!existReviews) {
-          throw new Error("Reviews not Found");
-        }
-
-        const updateReviews = await tx.review.update({
-          where: { id: reviewId },
-          data: {
-            comment: safeComment,
-            rating: rating,
-          },
-        });
-        if (rating !== existReviews.rating && property.reviewCount > 0) {
-          const oldtotalRating = property.averageRating * property.reviewCount;
-          const newAdjustedRating =
-            oldtotalRating - existReviews.rating + rating;
-          const newAverageRating = newAdjustedRating / property.reviewCount;
+        let newAvg = property.averageRating;
+        if (rating !== myReviews.rating) {
+          const total =
+            property.averageRating * property.reviewCount -
+            myReviews.rating +
+            rating;
+          newAvg = total / property.reviewCount;
 
           await tx.property.update({
-            where: { id: property.id },
-            data: {
-              averageRating: newAverageRating,
-            },
+            where: { id: myReviews.propertyId },
+            data: { averageRating: newAvg },
           });
         }
-        return updateReviews;
+
+        return tx.review.update({
+          where: { id: reviewId },
+          data: { rating, comment: comment ?? "" },
+        });
       });
 
+      redisClient
+        .incr(`reviews:property:${myReviews.propertyId}:version`)
+        .catch(console.error);
+      redisClient
+        .incr(`review:user:${req.user.userId}:version`)
+        .catch(console.error);
       return res.status(200).json({
         msg: "Review edited successfully",
         review: updatedreview,

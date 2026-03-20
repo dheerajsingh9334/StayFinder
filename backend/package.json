@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",
+    "worker": "tsx -r dotenv/config src/workers/ai.worker.ts",
     "start": "node dist/server.js"
   },
   "prisma": {
@@ -33,6 +34,7 @@
     "@types/nodemailer": "^7.0.11",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.71.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -44,6 +46,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.1",
     "openai": "^6.25.0",
+    "path": "^0.12.7",
     "razorpay": "^2.9.6",
     "razorpay-node-typescript": "^1.1.4",
     "typescript": "^5.9.3"

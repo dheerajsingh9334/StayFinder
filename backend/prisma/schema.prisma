@@ -159,9 +159,11 @@ model Favorite {
   user       User     @relation(fields: [userId], references: [id])
   userId     String   @db.ObjectId
   property   Property @relation(fields: [propertyId], references: [id])
-  propertyId String   @unique @db.ObjectId
+  propertyId String    @db.ObjectId
 
   @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([userId, createdAt])
 }
 
 model Message {

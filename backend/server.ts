@@ -1,11 +1,16 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({
+  path: path.join(process.cwd(), ".env"),
+});
+
 import { connectDB } from "./src/utils/dbconnect";
 import router from "./src/routes/main.routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import compression from "compression";
-dotenv.config();
 import "./src/listener/email.listner";
 import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
