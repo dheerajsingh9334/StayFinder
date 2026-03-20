@@ -27,18 +27,40 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
         order_id: payment.orderId,
 
         handler: async () => {
-          toast.loading("Verifying payment...");
-          if (!refetchBooking) {
-            return;
-          }
-          const res = await refetchBooking();
-          const updated = res.data?.booking;
-          if (updated?.status === BookingStatus.CONFIRMED) {
-            toast.success("Payment successful 🎉");
-            navigate("/mybooking");
-          } else {
-            toast("Payment processing. Please refresh in a moment.");
-          }
+          toast.loading("Confirming your booking...");
+
+          if (!refetchBooking) return;
+
+          let attempts = 0;
+          const maxAttempts = 6;
+
+          const interval = setInterval(async () => {
+            attempts++;
+
+            try {
+              const res = await refetchBooking();
+              const updated = res.data?.booking;
+
+              if (updated?.status === BookingStatus.CONFIRMED) {
+                clearInterval(interval);
+                toast.dismiss();
+                toast.success("Payment successful 🎉");
+                navigate("/mybooking");
+              }
+
+              if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                toast.dismiss();
+                toast(
+                  "Payment is being processed. Please check your bookings.",
+                );
+              }
+            } catch (err) {
+              clearInterval(interval);
+              toast.dismiss();
+              toast.error("Error verifying payment");
+            }
+          }, 2000); // every 2 sec
         },
       };
 

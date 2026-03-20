@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "worker": "tsx -r dotenv/config src/workers/ai.worker.ts",
+    "worker:email": "ts-node src/workers/email.worker.ts",
+    "worker:booking": "ts-node src/workers/booking.worker.ts",
+    "worker:payment": "ts-node src/workers/payment.worker.ts",
+    "workers": "concurrently \"npm run worker:email\" \"npm run worker:booking\" \"npm run worker:payment\"",
+    "all": "concurrently \"npm run dev\" \"npm run workers\"",
     "start": "node dist/server.js"
   },
   "prisma": {
@@ -36,6 +40,7 @@
     "bcrypt": "^6.0.0",
     "bullmq": "^5.71.0",
     "compression": "^1.8.1",
+    "concurrently": "^9.2.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

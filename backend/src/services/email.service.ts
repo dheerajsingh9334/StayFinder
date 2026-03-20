@@ -15,16 +15,19 @@ export const sendEmail = async ({
   to,
   subject,
   html,
+  replyTo,
 }: {
-  from: string;
+  from?: string;
   to: string;
   subject: string;
   html: string;
+  replyTo?: string;
 }) => {
   await transporter.sendMail({
-    from,
+    from: from || `"StayFinder" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
+    replyTo,
   });
 };

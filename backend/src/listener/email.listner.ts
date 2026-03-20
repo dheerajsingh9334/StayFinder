@@ -1,13 +1,24 @@
 import { Auth_Events } from "../event/auth.events";
 import eventBus from "../event/event";
+import { emailQueue } from "../queue/email.queue";
 import { sendEmail } from "../services/email.service";
 
 eventBus.on(Auth_Events.Send_Otp, async ({ email, otp }) => {
-  console.log("EMAIL LISTENER HIT");
-  await sendEmail({
-    from: "Bookinghotel",
-    to: email,
-    subject: "Your Login OTP",
-    html: `<h2>Your OTP is ${otp}</h2><p>Valid for 10 minutes</p>`,
-  });
+  await emailQueue.add(
+    "otp-email",
+    {
+      email,
+      otp,
+    },
+    {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+      removeOnComplete: true,
+      removeOnFail: true,
+    },
+  );
+  console.log("OTP EVENT RECEIVED", email);
 });

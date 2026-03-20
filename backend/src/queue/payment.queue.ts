@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
 
-export const bookingQueue = new Queue("emailQueue", {
+export const paymentQueue = new Queue("paymentQueue", {
   connection: {
     url: process.env.REDIS_URL,
   },
