@@ -9,7 +9,8 @@
     "worker:email": "ts-node src/workers/email.worker.ts",
     "worker:booking": "ts-node src/workers/booking.worker.ts",
     "worker:payment": "ts-node src/workers/payment.worker.ts",
-    "workers": "concurrently \"npm run worker:email\" \"npm run worker:booking\" \"npm run worker:payment\"",
+    "worker:ai": "ts-node src/workers/ai.worker.ts",
+    "workers": "concurrently \"npm run worker:email\" \"npm run worker:booking\" \"npm run worker:payment\" \"npm run worker:ai\"",
     "all": "concurrently \"npm run dev\" \"npm run workers\"",
     "start": "node dist/server.js"
   },

@@ -1,8 +1,8 @@
-import { useSelector } from "react-redux";
-import type { RootState } from "../store";
-import { Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import type { RootState } from "../store";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isloading } = useSelector(
@@ -12,6 +12,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (isloading) {
     return <div>Loading...</div>;
   }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -27,6 +28,7 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   if (isloading) {
     return <div>Loading...</div>;
   }
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -44,6 +46,7 @@ export const RoleRoute = ({
   const { isAuthenticated, isloading, user } = useSelector(
     (state: RootState) => state.auth,
   );
+
   useEffect(() => {
     if (
       !isloading &&
@@ -57,14 +60,44 @@ export const RoleRoute = ({
     }
   }, [isAuthenticated, isloading, user, allowedRoles]);
 
-  if (isloading || !user) {
+  if (isloading) {
     return <div>Loadinng....</div>;
   }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
+  if (!user) {
+    return <div>Loadinng....</div>;
+  }
+
   if (!allowedRoles.includes(user.role)) {
     return <Navigate to="/profile" replace />;
+  }
+
+  return children;
+};
+
+export const VerifiedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isloading, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
+
+  if (isloading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user.isEmailVerified) {
+    return <Navigate to={`/otp-verification?email=${user.email}`} replace />;
   }
 
   return children;

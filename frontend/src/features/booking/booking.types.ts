@@ -32,6 +32,7 @@ export type BookingProperty = {
   id: string;
   title: string;
   city: string;
+  state?: string;
   address?: string;
   images: string[];
 };

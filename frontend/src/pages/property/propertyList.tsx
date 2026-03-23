@@ -1,17 +1,45 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProperties } from "../../features/property/property.hooks";
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import PropertyCard from "../../components/property/PropertyCard";
 import Loader from "../../components/ui/Loader";
 import NearBy from "./NearBy";
+import { useInfinteScroll } from "../../hooks/useInfinteScroll";
+import type { PropertyPayload } from "../../features/property/property.types";
 
 export default function PropertyList() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useProperties(page);
+  const [allItems, setAllItems] = useState<PropertyPayload[]>([]);
+  const [totalPage, setTotalPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const { data, isLoading, isError, isFetching } = useProperties(page);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!data) return;
+
+    setTotal(data.total);
+    setTotalPage(data.totalPage);
+    setAllItems((prev) => {
+      if (page === 1) return data.data;
+      const seen = new Set(prev.map((item) => item.id));
+      return [...prev, ...data.data.filter((item) => !seen.has(item.id))];
+    });
+  }, [data, page]);
+
+  const loadMore = useCallback(() => {
+    if (isFetching || page >= totalPage) return;
+    setPage((p) => p + 1);
+  }, [isFetching, page, totalPage]);
+
+  const sentinelRef = useInfinteScroll({
+    hasMore: page < totalPage,
+    isLoading: isFetching,
+    onLoadMore: loadMore,
+  });
+
+  if (isLoading && page === 1) {
     return <Loader size="lg" text="Finding the best stays for you..." />;
   }
 
@@ -25,33 +53,39 @@ export default function PropertyList() {
         <p className="empty-state-description">
           We couldn't fetch the properties. Please try again later.
         </p>
-        <button className="btn btn-primary" onClick={() => window.location.reload()}>
+        <button
+          className="btn btn-primary"
+          onClick={() => window.location.reload()}
+        >
           Try again
         </button>
       </div>
     );
   }
 
-  const { data: items, totalPage, total } = data;
-
-  const handlePrev = () => {
-    if (page > 1) setPage((p: number) => p - 1);
-  };
-  
-  const handleNext = () => {
-    if (page < totalPage) setPage((p) => p + 1);
-  };
+  const items = allItems;
 
   return (
     <>
       {/* Page Header */}
       <div className="page-header">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-4)" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "var(--space-4)",
+          }}
+        >
           <div>
             <h1 className="page-title">Discover Amazing Stays</h1>
             <p className="page-subtitle">{total} properties available</p>
           </div>
-          <button className="btn btn-secondary">
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate("/search")}
+          >
             <SlidersHorizontal size={18} />
             Filters
           </button>
@@ -83,58 +117,39 @@ export default function PropertyList() {
                 ))}
               </div>
 
-              {/* Pagination */}
-              <div className="pagination">
-                <button 
-                  className="pagination-btn" 
-                  onClick={handlePrev} 
-                  disabled={page === 1}
+              <div ref={sentinelRef} style={{ height: 1 }} />
+              {(isFetching || page < totalPage) && (
+                <div
+                  style={{
+                    marginTop: "var(--space-5)",
+                    textAlign: "center",
+                    color: "var(--gray-500)",
+                    fontSize: "var(--text-sm)",
+                  }}
                 >
-                  <ChevronLeft size={18} />
-                </button>
-                
-                {Array.from({ length: Math.min(5, totalPage) }, (_, i) => {
-                  let pageNum;
-                  if (totalPage <= 5) {
-                    pageNum = i + 1;
-                  } else if (page <= 3) {
-                    pageNum = i + 1;
-                  } else if (page >= totalPage - 2) {
-                    pageNum = totalPage - 4 + i;
-                  } else {
-                    pageNum = page - 2 + i;
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      className={`pagination-btn ${page === pageNum ? 'active' : ''}`}
-                      onClick={() => setPage(pageNum)}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-                
-                <span className="pagination-info">
-                  of {totalPage}
-                </span>
-                
-                <button 
-                  className="pagination-btn" 
-                  onClick={handleNext} 
-                  disabled={page === totalPage}
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
+                  {isFetching
+                    ? "Loading more properties..."
+                    : "Scroll to load more"}
+                </div>
+              )}
             </>
           )}
         </div>
 
         {/* Sidebar - Nearby Map */}
         <div className="sidebar">
-          <div style={{ padding: "var(--space-4)", borderBottom: "1px solid var(--gray-100)" }}>
-            <h3 style={{ fontSize: "var(--text-base)", fontWeight: "var(--font-semibold)" }}>
+          <div
+            style={{
+              padding: "var(--space-4)",
+              borderBottom: "1px solid var(--gray-100)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "var(--text-base)",
+                fontWeight: "var(--font-semibold)",
+              }}
+            >
               Properties near you
             </h3>
           </div>

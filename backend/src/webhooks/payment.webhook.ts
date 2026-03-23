@@ -58,6 +58,9 @@ export default class PaymentWebhook {
           });
         });
 
+        // Bust cached `/booking/my-booking` response so clients see CONFIRMED quickly.
+        await redisClient.incr(`user:booking:version:${userId}`);
+
         // 🔥 QUEUE ADD
         console.log("🚀 ADDING PAYMENT JOB");
 
@@ -86,6 +89,9 @@ export default class PaymentWebhook {
             rawWebhook: req.body,
           },
         });
+
+        // Refresh cached user booking data for failure state as well.
+        await redisClient.incr(`user:booking:version:${userId}`);
 
         // 🔥 QUEUE ADD
         await paymentQueue.add("payment-failed", {

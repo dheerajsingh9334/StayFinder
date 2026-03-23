@@ -1,5 +1,3 @@
-import React from "react";
-
 interface LoaderProps {
   size?: "sm" | "md" | "lg";
   variant?: "spinner" | "dots";
@@ -7,17 +5,27 @@ interface LoaderProps {
   fullScreen?: boolean;
 }
 
-export function Loader({ 
-  size = "md", 
+export function Loader({
+  size = "md",
   variant = "spinner",
   text,
-  fullScreen = false 
+  fullScreen = false,
 }: LoaderProps) {
   const sizeClass = size !== "md" ? `loader-${size}` : "";
-  
+
   const content = (
-    <div className="loader-container" style={fullScreen ? { minHeight: "100vh" } : {}}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)" }}>
+    <div
+      className="loader-container"
+      style={fullScreen ? { minHeight: "100vh" } : {}}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "var(--space-4)",
+        }}
+      >
         {variant === "spinner" ? (
           <div className={`loader ${sizeClass}`} />
         ) : (
@@ -35,7 +43,7 @@ export function Loader({
       </div>
     </div>
   );
-  
+
   return content;
 }
 
@@ -43,18 +51,22 @@ export default Loader;
 
 export function PageLoader() {
   return (
-    <div style={{ 
-      display: "flex", 
-      alignItems: "center", 
-      justifyContent: "center",
-      minHeight: "60vh"
-    }}>
-      <div style={{ 
-        display: "flex", 
-        flexDirection: "column", 
-        alignItems: "center", 
-        gap: "var(--space-4)" 
-      }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60vh",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "var(--space-4)",
+        }}
+      >
         <div className="loader loader-lg" />
         <p style={{ color: "var(--gray-500)" }}>Loading...</p>
       </div>
@@ -64,8 +76,8 @@ export function PageLoader() {
 
 export function ButtonLoader() {
   return (
-    <span 
-      className="loader loader-sm" 
+    <span
+      className="loader loader-sm"
       style={{ borderTopColor: "currentColor" }}
     />
   );

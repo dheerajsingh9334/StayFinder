@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PropertySerachQuery } from "./search.types";
 import { validatePropertySearchQuery } from "./search.validation";
 import { searchProperty } from "./search.services";
+import { parseSearchQueryAI } from "./aisearchparser";
 
 import { redisClient } from "../../config/redis";
 import { addAiSearchJob } from "../../jobs/ai.job";
@@ -77,7 +78,41 @@ export default class SearchController {
       ]);
 
       return res.status(200).json(result);
-    } catch (error) {
+    } catch (error: any) {
+      // Fallback to direct execution when queue/worker is delayed or unavailable.
+      if (error?.message === "timeout") {
+        try {
+          const { text } = req.body;
+          const normalized = text.toLowerCase().replace(/\s+/g, " ").trim();
+          const fallbackKey = `ai:result:${normalized}`;
+          const query = await parseSearchQueryAI(normalized);
+
+          if (!query || typeof query !== "object") {
+            throw new Error("Invalid parsed query");
+          }
+
+          validatePropertySearchQuery(query as PropertySerachQuery);
+          const properties = await searchProperty(query as PropertySerachQuery);
+          const responseData = {
+            msg: "Property fetched successfully",
+            ...properties,
+          };
+
+          await redisClient.set(
+            fallbackKey,
+            JSON.stringify(responseData),
+            "EX",
+            60,
+          );
+          return res.status(200).json(responseData);
+        } catch (fallbackError: any) {
+          console.log("AI fallback failed", fallbackError?.message);
+          return res
+            .status(500)
+            .json({ msg: "AI search failed", message: fallbackError?.message });
+        }
+      }
+
       console.log(error);
       return res.status(500).json({ msg: "AI search failed" });
     }

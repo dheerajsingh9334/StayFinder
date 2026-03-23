@@ -3,31 +3,37 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../store";
 import { logout } from "../../features/auth/auth.slice";
-import { 
-  Home, 
-  Search, 
-  User, 
-  LogOut, 
-  PlusCircle, 
+import {
+  Home,
+  Search,
+  User,
+  LogOut,
+  PlusCircle,
   Building2,
   Calendar,
   Menu,
   X,
-  MapPin
+  MapPin,
 } from "lucide-react";
 
 export default function Navbar() {
-  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -42,11 +48,21 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   const getInitials = (name?: string) => {
     if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -59,40 +75,57 @@ export default function Navbar() {
         </Link>
 
         {/* Search Bar - Desktop */}
-        <div className="search-bar" style={{ maxWidth: "400px", flex: 1, margin: "0 var(--space-6)" }}>
+        <form
+          className="search-bar"
+          onSubmit={handleSearchSubmit}
+          style={{ maxWidth: "400px", flex: 1, margin: "0 var(--space-6)" }}
+        >
           <Search size={18} className="search-bar-icon" />
-          <input 
-            type="text" 
-            placeholder="Search destinations, properties..." 
-            onFocus={() => navigate("/")}
+          <input
+            type="text"
+            placeholder="Search destinations, properties..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
 
         {/* Navigation Links - Desktop */}
         <div className="navbar-nav">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className={`navbar-link ${isActive("/") ? "active" : ""}`}
           >
             Explore
           </Link>
-          <Link 
-            to="/nearby" 
+          <Link
+            to="/nearby"
             className={`navbar-link ${isActive("/nearby") ? "active" : ""}`}
           >
             <MapPin size={16} style={{ marginRight: "4px" }} />
             Nearby
           </Link>
+          <Link
+            to="/search"
+            className={`navbar-link ${isActive("/search") ? "active" : ""}`}
+          >
+            Search
+          </Link>
           {user?.role === "HOST" && (
             <>
-              <Link 
-                to="/Myproperty" 
+              <Link
+                to="/host-panel"
+                className={`navbar-link ${isActive("/host-panel") ? "active" : ""}`}
+              >
+                Host Panel
+              </Link>
+              <Link
+                to="/Myproperty"
                 className={`navbar-link ${isActive("/Myproperty") ? "active" : ""}`}
               >
                 My Properties
               </Link>
-              <Link 
-                to="/CreateProperty" 
+              <Link
+                to="/CreateProperty"
                 className={`navbar-link ${isActive("/CreateProperty") ? "active" : ""}`}
               >
                 <PlusCircle size={16} style={{ marginRight: "4px" }} />
@@ -105,9 +138,12 @@ export default function Navbar() {
         {/* Actions */}
         <div className="navbar-actions">
           {isAuthenticated && user ? (
-            <div className={`dropdown ${isDropdownOpen ? "open" : ""}`} ref={dropdownRef}>
-              <div 
-                className="navbar-avatar" 
+            <div
+              className={`dropdown ${isDropdownOpen ? "open" : ""}`}
+              ref={dropdownRef}
+            >
+              <div
+                className="navbar-avatar"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 {user.avatarUrl ? (
@@ -116,52 +152,83 @@ export default function Navbar() {
                   getInitials(user.name)
                 )}
               </div>
-              
+
               <div className="dropdown-menu">
-                <div style={{ padding: "var(--space-3) var(--space-4)", borderBottom: "1px solid var(--gray-100)" }}>
-                  <p style={{ fontWeight: "var(--font-semibold)", color: "var(--gray-900)", marginBottom: "2px" }}>
+                <div
+                  style={{
+                    padding: "var(--space-3) var(--space-4)",
+                    borderBottom: "1px solid var(--gray-100)",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontWeight: "var(--font-semibold)",
+                      color: "var(--gray-900)",
+                      marginBottom: "2px",
+                    }}
+                  >
                     {user.name}
                   </p>
-                  <p style={{ fontSize: "var(--text-xs)", color: "var(--gray-500)" }}>
+                  <p
+                    style={{
+                      fontSize: "var(--text-xs)",
+                      color: "var(--gray-500)",
+                    }}
+                  >
                     {user.email}
                   </p>
                 </div>
-                
-                <Link 
-                  to="/profile" 
+
+                <Link
+                  to="/profile"
                   className="dropdown-item"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <User size={16} />
                   Profile
                 </Link>
-                
-                <Link 
-                  to="/mybooking" 
+
+                <Link
+                  to="/mybooking"
                   className="dropdown-item"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <Calendar size={16} />
                   My Bookings
                 </Link>
-                
+
                 {user.role === "HOST" && (
-                  <Link 
-                    to="/Myproperty" 
-                    className="dropdown-item"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <Building2 size={16} />
-                    My Properties
-                  </Link>
+                  <>
+                    <Link
+                      to="/host-panel"
+                      className="dropdown-item"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <Building2 size={16} />
+                      Host Panel
+                    </Link>
+                    <Link
+                      to="/Myproperty"
+                      className="dropdown-item"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <Building2 size={16} />
+                      My Properties
+                    </Link>
+                  </>
                 )}
-                
+
                 <div className="dropdown-divider" />
-                
-                <button 
+
+                <button
                   className="dropdown-item danger"
                   onClick={handleLogout}
-                  style={{ width: "100%", border: "none", background: "none", cursor: "pointer" }}
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   <LogOut size={16} />
                   Logout
@@ -180,7 +247,7 @@ export default function Navbar() {
           )}
 
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             className="btn btn-icon btn-ghost"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             style={{ display: "none" }}
@@ -192,31 +259,63 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div style={{
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          right: 0,
-          background: "var(--white)",
-          borderTop: "1px solid var(--gray-100)",
-          boxShadow: "var(--shadow-lg)",
-          padding: "var(--space-4)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-2)"
-        }}>
-          <Link to="/" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "var(--white)",
+            borderTop: "1px solid var(--gray-100)",
+            boxShadow: "var(--shadow-lg)",
+            padding: "var(--space-4)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--space-2)",
+          }}
+        >
+          <Link
+            to="/"
+            className="navbar-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             Explore
           </Link>
-          <Link to="/nearby" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <Link
+            to="/nearby"
+            className="navbar-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             Nearby
+          </Link>
+          <Link
+            to="/search"
+            className="navbar-link"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Search
           </Link>
           {user?.role === "HOST" && (
             <>
-              <Link to="/Myproperty" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link
+                to="/host-panel"
+                className="navbar-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Host Panel
+              </Link>
+              <Link
+                to="/Myproperty"
+                className="navbar-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 My Properties
               </Link>
-              <Link to="/CreateProperty" className="navbar-link" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link
+                to="/CreateProperty"
+                className="navbar-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 List Property
               </Link>
             </>

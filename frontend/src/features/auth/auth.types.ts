@@ -15,6 +15,7 @@ export type AuthUser = {
   role: "USER" | "HOST" | "ADMIN";
   phone?: string;
   avatarUrl?: string;
+  isEmailVerified?: boolean;
   createdAt: string;
 };
 

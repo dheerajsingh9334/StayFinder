@@ -27,37 +27,63 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
         order_id: payment.orderId,
 
         handler: async () => {
-          toast.loading("Confirming your booking...");
+          const loadingToastId = toast.loading("Confirming your booking...");
 
-          if (!refetchBooking) return;
+          if (!refetchBooking) {
+            toast.dismiss(loadingToastId);
+            toast("Payment is being processed. Please check your bookings.");
+            navigate("/mybooking");
+            return;
+          }
 
           let attempts = 0;
-          const maxAttempts = 6;
+          const maxAttempts = 10;
+
+          const checkStatus = async () => {
+            const res = await refetchBooking();
+            const bookings = Array.isArray(res?.data?.booking)
+              ? res.data.booking
+              : [];
+            const updated = bookings.find((b: any) => b.id === bookingId);
+            return updated?.status === BookingStatus.CONFIRMED;
+          };
+
+          try {
+            const confirmed = await checkStatus();
+            if (confirmed) {
+              toast.dismiss(loadingToastId);
+              toast.success("Payment successful 🎉");
+              navigate("/mybooking");
+              return;
+            }
+          } catch {
+            // Continue with interval polling fallback.
+          }
 
           const interval = setInterval(async () => {
             attempts++;
 
             try {
-              const res = await refetchBooking();
-              const updated = res.data?.booking;
+              const confirmed = await checkStatus();
 
-              if (updated?.status === BookingStatus.CONFIRMED) {
+              if (confirmed) {
                 clearInterval(interval);
-                toast.dismiss();
+                toast.dismiss(loadingToastId);
                 toast.success("Payment successful 🎉");
                 navigate("/mybooking");
+                return;
               }
 
               if (attempts >= maxAttempts) {
                 clearInterval(interval);
-                toast.dismiss();
+                toast.dismiss(loadingToastId);
                 toast(
                   "Payment is being processed. Please check your bookings.",
                 );
               }
-            } catch (err) {
+            } catch {
               clearInterval(interval);
-              toast.dismiss();
+              toast.dismiss(loadingToastId);
               toast.error("Error verifying payment");
             }
           }, 2000); // every 2 sec

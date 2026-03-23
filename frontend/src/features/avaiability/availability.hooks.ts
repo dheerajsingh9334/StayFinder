@@ -3,13 +3,15 @@ import type { CalendarResponse } from "./availbility.types";
 import { getCalendarViewApi } from "./availability.api";
 
 export const useAvailability = (
-  propertyId: string,
+  propertyId: string | undefined,
   startDate: string,
   endDate: string,
 ) => {
   return useQuery<CalendarResponse>({
     queryKey: ["availability", propertyId, startDate, endDate],
-    queryFn: () => getCalendarViewApi(propertyId, startDate, endDate),
-    refetchInterval: 5000,
+    queryFn: () => getCalendarViewApi(propertyId as string, startDate, endDate),
+    enabled: Boolean(propertyId),
+    refetchInterval: 60000,
+    retry: 1,
   });
 };

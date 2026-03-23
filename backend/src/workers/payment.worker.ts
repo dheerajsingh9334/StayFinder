@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { Worker } from "bullmq";
+import { redisUrl } from "../config/redis";
 import eventBus from "../event/event";
 import { PAYMENT_EVENTS } from "../event/payment.event";
 import { BOOKING_EVENTS } from "../event/booking.event";
@@ -47,7 +48,7 @@ new Worker(
   },
   {
     connection: {
-      url: process.env.REDIS_URL,
+      url: redisUrl,
     },
   },
 );

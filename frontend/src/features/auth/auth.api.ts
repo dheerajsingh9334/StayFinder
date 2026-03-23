@@ -1,4 +1,3 @@
-import { data } from "react-router-dom";
 import { authService } from "../../services/auth.services";
 
 import type {
@@ -10,15 +9,17 @@ import type {
   UpdateProfilePayload,
 } from "./auth.types";
 
-export const loginApi = async (data: LoginPayload): Promise<AuthResponse> => {
-  const res = await authService.login(data);
+export const loginApi = async (
+  loginData: LoginPayload,
+): Promise<AuthResponse> => {
+  const res = await authService.login(loginData);
   return res.data;
 };
 
 export const registerApi = async (
-  data: SignupPayload
+  signupData: SignupPayload,
 ): Promise<AuthResponse> => {
-  const res = await authService.registred(data);
+  const res = await authService.register(signupData);
   return res.data;
 };
 
@@ -32,15 +33,28 @@ export const logoutApi = async (): Promise<void> => {
 };
 
 export const updateProfileApi = async (
-  data: UpdateProfilePayload
+  data: UpdateProfilePayload,
 ): Promise<AuthResponse> => {
   const res = await authService.updateProfile(data);
   return res.data;
 };
 
 export const ChangePasswordApi = async (
-  data: ChangePasswordPayload
+  data: ChangePasswordPayload,
 ): Promise<ChangePasswordResponse> => {
   const res = await authService.changePassword(data);
+  return res.data;
+};
+
+export const sendOtpApi = async (email: string): Promise<{ msg: string }> => {
+  const res = await authService.sendOtp(email);
+  return res.data;
+};
+
+export const verifyOtpApi = async (
+  email: string,
+  code: string,
+): Promise<AuthResponse> => {
+  const res = await authService.verifyOtp(email, code);
   return res.data;
 };

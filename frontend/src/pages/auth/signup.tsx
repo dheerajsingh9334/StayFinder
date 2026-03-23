@@ -12,24 +12,28 @@ import Input from "../../components/ui/Input";
 export default function Signup() {
   const dispatch = useDispatch<AppDispatch>();
   const { error, isloading, isSuccess, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error, { id: "registred error" });
-    }
-    if (isSuccess || isAuthenticated) {
-      navigate("/profile", { replace: true });
-    }
-  }, [navigate, error, isSuccess, isAuthenticated]);
 
   const [form, setForm] = useState<SignupPayload>({
     name: "",
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error, { id: "registred error" });
+    }
+    if (isSuccess) {
+      navigate(`/otp-verification?email=${encodeURIComponent(form.email)}`, {
+        replace: true,
+      });
+    } else if (isAuthenticated) {
+      navigate("/profile", { replace: true });
+    }
+  }, [navigate, error, isSuccess, isAuthenticated, form.email]);
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,9 +91,9 @@ export default function Signup() {
             leftIcon={<Lock size={18} />}
           />
 
-          <Button 
-            type="submit" 
-            fullWidth 
+          <Button
+            type="submit"
+            fullWidth
             isLoading={isloading}
             rightIcon={<ArrowRight size={18} />}
           >
@@ -97,16 +101,22 @@ export default function Signup() {
           </Button>
         </form>
 
-        <p style={{ 
-          fontSize: "var(--text-xs)", 
-          color: "var(--gray-500)", 
-          textAlign: "center",
-          marginTop: "var(--space-4)"
-        }}>
+        <p
+          style={{
+            fontSize: "var(--text-xs)",
+            color: "var(--gray-500)",
+            textAlign: "center",
+            marginTop: "var(--space-4)",
+          }}
+        >
           By signing up, you agree to our{" "}
-          <a href="#" className="auth-link">Terms of Service</a>
-          {" "}and{" "}
-          <a href="#" className="auth-link">Privacy Policy</a>
+          <a href="#" className="auth-link">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="auth-link">
+            Privacy Policy
+          </a>
         </p>
 
         <div className="auth-footer">

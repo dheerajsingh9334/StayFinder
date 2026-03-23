@@ -12,16 +12,24 @@ import Input from "../../components/ui/Input";
 export default function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { error, isloading, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { error, isloading, isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   useEffect(() => {
     if (error) {
       toast.error(error, { id: "Auth only" });
     }
+
+    if (isAuthenticated && user && !user.isEmailVerified) {
+      navigate(`/otp-verification?email=${user.email}`, { replace: true });
+      return;
+    }
+
     if (isAuthenticated) {
       navigate("/", { replace: true });
     }
-  }, [error, isAuthenticated, navigate]);
+  }, [error, isAuthenticated, navigate, user]);
 
   const [form, setForm] = useState<LoginPayload>({
     email: "",
@@ -70,8 +78,8 @@ export default function Login() {
           />
 
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Link 
-              to="/forgot-password" 
+            <Link
+              to="/forgot-password"
               className="auth-link"
               style={{ fontSize: "var(--text-sm)" }}
             >
@@ -79,9 +87,9 @@ export default function Login() {
             </Link>
           </div>
 
-          <Button 
-            type="submit" 
-            fullWidth 
+          <Button
+            type="submit"
+            fullWidth
             isLoading={isloading}
             rightIcon={<ArrowRight size={18} />}
           >

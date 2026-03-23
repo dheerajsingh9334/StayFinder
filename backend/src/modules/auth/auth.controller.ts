@@ -94,6 +94,7 @@ export default class AuthController {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          isEmailVerified: user.isEmailVerified,
         },
       });
     } catch (error) {
@@ -150,6 +151,7 @@ export default class AuthController {
           email: user.email,
           role: user.role,
           phone: user.phone,
+          isEmailVerified: user.isEmailVerified,
         },
       });
     } catch (error) {
@@ -207,6 +209,7 @@ export default class AuthController {
           role: true,
           phone: true,
           createdAt: true,
+          isEmailVerified: true,
         },
       });
       if (!profile) {
@@ -432,7 +435,22 @@ export default class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(200).json({ msg: "OTP verified. Login success" });
+      const verifiedUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          phone: true,
+          isEmailVerified: true,
+        },
+      });
+
+      return res.status(200).json({
+        msg: "OTP verified. Login success",
+        user: verifiedUser,
+      });
     } catch (error) {
       return res.status(500).json({
         msg: "server Error",

@@ -13,7 +13,9 @@ import {
   logoutApi,
   profileApi,
   registerApi,
+  sendOtpApi,
   updateProfileApi,
+  verifyOtpApi,
 } from "./auth.api";
 import axios from "axios";
 
@@ -23,14 +25,18 @@ type AuthState = {
   isSuccess: boolean;
   isAuthenticated: boolean;
   error: string | null;
+  otpEmail: string | null;
+  otpVerified: boolean;
 };
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isSuccess: false,
-  isloading: true,
+  isloading: false,
   error: null,
+  otpEmail: null,
+  otpVerified: false,
 };
 
 export const login = createAsyncThunk<AuthResponse, LoginPayload>(
@@ -41,7 +47,7 @@ export const login = createAsyncThunk<AuthResponse, LoginPayload>(
     } catch (err: any) {
       return rejectWithValue(err.response.data?.msg || "login Failed");
     }
-  }
+  },
 );
 
 export const register = createAsyncThunk<AuthResponse, SignupPayload>(
@@ -54,12 +60,12 @@ export const register = createAsyncThunk<AuthResponse, SignupPayload>(
 
       if (axios.isAxiosError(error)) {
         return rejectWithValue(
-          error.response?.data?.msg || "Registration failed"
+          error.response?.data?.msg || "Registration failed",
         );
       }
       return rejectWithValue(error.response.data?.msg);
     }
-  }
+  },
 );
 
 export const getProfile = createAsyncThunk<AuthResponse>(
@@ -70,7 +76,7 @@ export const getProfile = createAsyncThunk<AuthResponse>(
     } catch (err: any) {
       return rejectWithValue("unauthorized");
     }
-  }
+  },
 );
 export const updateProfile = createAsyncThunk<
   AuthResponse,
@@ -78,8 +84,10 @@ export const updateProfile = createAsyncThunk<
 >("auth/updateProfile", async (payload, { rejectWithValue }) => {
   try {
     return await updateProfileApi(payload);
-  } catch (error) {
-    return rejectWithValue(error.response.data?.msg || "Update profile error");
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.msg || "Update profile error",
+    );
   }
 });
 export const logout = createAsyncThunk("auth/logout", async () => {
@@ -91,9 +99,33 @@ export const changePassword = createAsyncThunk<
 >("auth/password", async (payload, { rejectWithValue }) => {
   try {
     return await ChangePasswordApi(payload);
-  } catch (error) {
+  } catch (error: any) {
     return rejectWithValue(
-      error.response?.data?.msg || "Password change Failed"
+      error?.response?.data?.msg || "Password change Failed",
+    );
+  }
+});
+
+export const sendOtp = createAsyncThunk<{ msg: string }, string>(
+  "auth/sendOtp",
+  async (email, { rejectWithValue }) => {
+    try {
+      return await sendOtpApi(email);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.msg || "Failed to send OTP");
+    }
+  },
+);
+
+export const verifyOtp = createAsyncThunk<
+  AuthResponse,
+  { email: string; code: string }
+>("auth/verifyOtp", async (payload, { rejectWithValue }) => {
+  try {
+    return await verifyOtpApi(payload.email, payload.code);
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.msg || "OTP verification failed",
     );
   }
 });
@@ -105,6 +137,9 @@ const authSlice = createSlice({
     resetAuthFlags: (state) => {
       state.isSuccess = false;
       state.error = null;
+    },
+    setOtpEmail: (state, action) => {
+      state.otpEmail = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -153,6 +188,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(logout.fulfilled, (state) => {
+        state.isloading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
@@ -171,6 +207,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(changePassword.fulfilled, (state) => {
+        state.isloading = false;
         state.isSuccess = true;
         state.user = null;
         state.isAuthenticated = false;
@@ -182,9 +219,36 @@ const authSlice = createSlice({
         state.isloading = false;
         state.isSuccess = false;
         state.error = action.payload as string;
+      })
+      .addCase(sendOtp.pending, (state) => {
+        state.isloading = true;
+        state.error = null;
+      })
+      .addCase(sendOtp.fulfilled, (state) => {
+        state.isloading = false;
+        state.isSuccess = true;
+      })
+      .addCase(sendOtp.rejected, (state, action) => {
+        state.isloading = false;
+        state.isSuccess = false;
+        state.error = action.payload as string;
+      })
+      .addCase(verifyOtp.pending, (state) => {
+        state.isloading = true;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.isloading = false;
+        state.otpVerified = true;
+        state.isSuccess = true;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.isloading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
 export default authSlice.reducer;
-export const { resetAuthFlags } = authSlice.actions;
+export const { resetAuthFlags, setOtpEmail } = authSlice.actions;

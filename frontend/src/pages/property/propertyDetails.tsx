@@ -11,20 +11,19 @@ import {
 import CalendarView from "../availbility/CalenderView";
 import MapView from "../map/MapView";
 import { useLiveLocation } from "../../hooks/useLiveLocation";
-import { 
-  MapPin, 
-  Users, 
-  Bed, 
-  Bath, 
-  Star, 
-  Edit2, 
-  Wifi, 
-  Car, 
-  Wind, 
+import {
+  MapPin,
+  Users,
+  Bed,
+  Bath,
+  Star,
+  Edit2,
+  Wifi,
+  Car,
+  Wind,
   UtensilsCrossed,
   Check,
-  X,
-  ChevronLeft
+  ChevronLeft,
 } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input, { Textarea } from "../../components/ui/Input";
@@ -58,7 +57,9 @@ export default function PropertyDetails() {
   }
 
   const isOwner = user?.id === current.owner?.id;
-  const mainImage = current.images?.[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200";
+  const mainImage =
+    current.images?.[0] ||
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200";
 
   const handleEditStart = () => {
     setForm({
@@ -91,7 +92,7 @@ export default function PropertyDetails() {
         onError: (err) => {
           toast.error(err.message);
         },
-      }
+      },
     );
   };
 
@@ -110,7 +111,15 @@ export default function PropertyDetails() {
     });
   };
 
-  const Amenities = ["wifi", "ac", "parking", "kitchen", "tissue", "fresh-pillow", "fresh-flowers"] as const;
+  const Amenities = [
+    "wifi",
+    "ac",
+    "parking",
+    "kitchen",
+    "tissue",
+    "fresh-pillow",
+    "fresh-flowers",
+  ] as const;
 
   const handleBook = () => {
     navigate(`/booking/new?propertyId=${current.id}`);
@@ -119,7 +128,7 @@ export default function PropertyDetails() {
   return (
     <div>
       {/* Back Button */}
-      <button 
+      <button
         onClick={() => navigate(-1)}
         className="btn btn-ghost"
         style={{ marginBottom: "var(--space-4)" }}
@@ -135,17 +144,19 @@ export default function PropertyDetails() {
           <div className="property-gallery">
             <img src={mainImage} alt={current.title} />
             {current.images && current.images.length > 1 && (
-              <div style={{
-                position: "absolute",
-                bottom: "var(--space-4)",
-                right: "var(--space-4)",
-                background: "var(--white)",
-                padding: "var(--space-2) var(--space-3)",
-                borderRadius: "var(--radius-lg)",
-                fontSize: "var(--text-sm)",
-                fontWeight: "var(--font-medium)",
-                boxShadow: "var(--shadow-md)"
-              }}>
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "var(--space-4)",
+                  right: "var(--space-4)",
+                  background: "var(--white)",
+                  padding: "var(--space-2) var(--space-3)",
+                  borderRadius: "var(--radius-lg)",
+                  fontSize: "var(--text-sm)",
+                  fontWeight: "var(--font-medium)",
+                  boxShadow: "var(--shadow-md)",
+                }}
+              >
                 +{current.images.length - 1} more photos
               </div>
             )}
@@ -154,18 +165,39 @@ export default function PropertyDetails() {
           <div className="property-content">
             {/* Header */}
             <div className="property-header">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
                 <div>
                   <h1 className="property-title">{current.title}</h1>
                   <div className="property-location">
                     <MapPin size={18} />
-                    <span>{current.address || current.city}, {current.state}, {current.country}</span>
+                    <span>
+                      {current.address || current.city}, {current.state},{" "}
+                      {current.country}
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
-                  <Star size={18} fill="var(--accent-amber)" color="var(--accent-amber)" />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--space-2)",
+                  }}
+                >
+                  <Star
+                    size={18}
+                    fill="var(--accent-amber)"
+                    color="var(--accent-amber)"
+                  />
                   <span style={{ fontWeight: "var(--font-semibold)" }}>
-                    {current.averageRating > 0 ? current.averageRating.toFixed(1) : "New"}
+                    {current.averageRating > 0
+                      ? current.averageRating.toFixed(1)
+                      : "New"}
                   </span>
                   <span style={{ color: "var(--gray-500)" }}>
                     ({current.reviewCount} reviews)
@@ -174,8 +206,8 @@ export default function PropertyDetails() {
               </div>
 
               {isOwner && !isEditing && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleEditStart}
                   leftIcon={<Edit2 size={16} />}
                   style={{ marginTop: "var(--space-4)" }}
@@ -215,8 +247,12 @@ export default function PropertyDetails() {
                   <div className="amenities">
                     {current.amenities?.map((amenity, i) => (
                       <div key={i} className="amenity">
-                        {amenityIcons[amenity.toLowerCase()] || <Check size={18} />}
-                        <span style={{ textTransform: "capitalize" }}>{amenity}</span>
+                        {amenityIcons[amenity.toLowerCase()] || (
+                          <Check size={18} />
+                        )}
+                        <span style={{ textTransform: "capitalize" }}>
+                          {amenity}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -228,14 +264,19 @@ export default function PropertyDetails() {
                   <div className="property-host">
                     <div className="avatar avatar-lg">
                       {current.owner?.avatarUrl ? (
-                        <img src={current.owner.avatarUrl} alt={current.owner.name} />
+                        <img
+                          src={current.owner.avatarUrl}
+                          alt={current.owner.name}
+                        />
                       ) : (
                         current.owner?.name?.charAt(0).toUpperCase() || "H"
                       )}
                     </div>
                     <div className="property-host-info">
                       <h4>{current.owner?.name || "Host"}</h4>
-                      {current.owner?.phone && <p>Contact: {current.owner.phone}</p>}
+                      {current.owner?.phone && (
+                        <p>Contact: {current.owner.phone}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -245,18 +286,20 @@ export default function PropertyDetails() {
                   <h3 className="property-section-title">Location</h3>
                   <div className="map-container">
                     <MapView
-                      properties={[{
-                        id: current.id,
-                        title: current.title,
-                        price: current.price,
-                        state: current.state,
-                        city: current.city,
-                        lat: current.lat ?? null,
-                        lng: current.lng ?? null,
-                        images: current.images ?? [],
-                        averageRating: current.averageRating ?? 0,
-                        availability: current.availability ?? [],
-                      }]}
+                      properties={[
+                        {
+                          id: current.id,
+                          title: current.title,
+                          price: current.price,
+                          state: current.state,
+                          city: current.city,
+                          lat: current.lat ?? null,
+                          lng: current.lng ?? null,
+                          images: current.images ?? [],
+                          averageRating: current.averageRating ?? 0,
+                          availability: current.availability ?? [],
+                        },
+                      ]}
                       userLat={userlocation?.lat}
                       userLng={userlocation?.lng}
                     />
@@ -266,46 +309,67 @@ export default function PropertyDetails() {
             ) : (
               /* Edit Form */
               form && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "var(--space-4)",
+                  }}
+                >
                   <Input
                     label="Title"
                     value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, title: e.target.value })
+                    }
                   />
                   <Textarea
                     label="Description"
                     value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
                   />
                   <div className="form-row">
                     <Input
                       label="Price per night (₹)"
                       type="number"
                       value={form.price}
-                      onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setForm({ ...form, price: Number(e.target.value) })
+                      }
                     />
                     <Input
                       label="Capacity"
                       type="number"
                       value={form.capacity}
-                      onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setForm({ ...form, capacity: Number(e.target.value) })
+                      }
                     />
                   </div>
                   <div className="form-row">
                     <Input
                       label="City"
                       value={form.city}
-                      onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, city: e.target.value })
+                      }
                     />
                     <Input
                       label="State"
                       value={form.state}
-                      onChange={(e) => setForm({ ...form, state: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, state: e.target.value })
+                      }
                     />
                   </div>
                   <div>
                     <label className="form-label">Amenities</label>
-                    <div className="amenities" style={{ marginTop: "var(--space-2)" }}>
+                    <div
+                      className="amenities"
+                      style={{ marginTop: "var(--space-2)" }}
+                    >
                       {Amenities.map((a) => (
                         <button
                           key={a}
@@ -315,13 +379,24 @@ export default function PropertyDetails() {
                           style={{ cursor: "pointer" }}
                         >
                           {amenityIcons[a] || <Check size={18} />}
-                          <span style={{ textTransform: "capitalize" }}>{a}</span>
+                          <span style={{ textTransform: "capitalize" }}>
+                            {a}
+                          </span>
                         </button>
                       ))}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "var(--space-3)", marginTop: "var(--space-4)" }}>
-                    <Button onClick={handleSave} isLoading={updateProperty.isPending}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "var(--space-3)",
+                      marginTop: "var(--space-4)",
+                    }}
+                  >
+                    <Button
+                      onClick={handleSave}
+                      isLoading={updateProperty.isPending}
+                    >
                       Save Changes
                     </Button>
                     <Button variant="secondary" onClick={handleCancel}>
@@ -341,13 +416,33 @@ export default function PropertyDetails() {
               ₹{current.price.toLocaleString()}
               <span> / night</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
-              <Star size={14} fill="var(--accent-amber)" color="var(--accent-amber)" />
-              <span style={{ fontWeight: "var(--font-medium)", fontSize: "var(--text-sm)" }}>
-                {current.averageRating > 0 ? current.averageRating.toFixed(1) : "New"}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--space-2)",
+                marginTop: "var(--space-2)",
+              }}
+            >
+              <Star
+                size={14}
+                fill="var(--accent-amber)"
+                color="var(--accent-amber)"
+              />
+              <span
+                style={{
+                  fontWeight: "var(--font-medium)",
+                  fontSize: "var(--text-sm)",
+                }}
+              >
+                {current.averageRating > 0
+                  ? current.averageRating.toFixed(1)
+                  : "New"}
               </span>
               <span style={{ color: "var(--gray-400)" }}>·</span>
-              <span style={{ color: "var(--gray-500)", fontSize: "var(--text-sm)" }}>
+              <span
+                style={{ color: "var(--gray-500)", fontSize: "var(--text-sm)" }}
+              >
                 {current.reviewCount} reviews
               </span>
             </div>
@@ -367,16 +462,24 @@ export default function PropertyDetails() {
                 Reserve Now
               </Button>
             ) : (
-              <p style={{ textAlign: "center", color: "var(--gray-500)", fontSize: "var(--text-sm)" }}>
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "var(--gray-500)",
+                  fontSize: "var(--text-sm)",
+                }}
+              >
                 This is your property
               </p>
             )}
-            <p style={{ 
-              textAlign: "center", 
-              color: "var(--gray-500)", 
-              fontSize: "var(--text-xs)",
-              marginTop: "var(--space-3)"
-            }}>
+            <p
+              style={{
+                textAlign: "center",
+                color: "var(--gray-500)",
+                fontSize: "var(--text-xs)",
+                marginTop: "var(--space-3)",
+              }}
+            >
               You won't be charged yet
             </p>
           </div>
