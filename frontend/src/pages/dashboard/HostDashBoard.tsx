@@ -107,17 +107,46 @@ export default function HostDashboard() {
     return <Loader size="lg" text="Loading your dashboard..." />;
   }
 
+  const getStatusTone = (status: string) => {
+    const normalized = status.toUpperCase();
+    if (normalized.includes("CONFIRM")) {
+      return {
+        background: "rgba(20, 138, 136, 0.25)",
+        color: "var(--chalk-100)",
+        border: "1px solid rgba(20, 138, 136, 0.45)",
+      };
+    }
+    if (normalized.includes("PENDING")) {
+      return {
+        background: "rgba(213, 137, 27, 0.2)",
+        color: "var(--chalk-100)",
+        border: "1px solid rgba(213, 137, 27, 0.38)",
+      };
+    }
+    return {
+      background: "rgba(239, 68, 68, 0.2)",
+      color: "var(--chalk-100)",
+      border: "1px solid rgba(239, 68, 68, 0.38)",
+    };
+  };
+
   const StatCard = ({ icon: Icon, label, value }: any) => (
     <div
       className="card"
-      style={{ display: "flex", gap: "var(--space-4)", alignItems: "start" }}
+      style={{
+        display: "flex",
+        gap: "var(--space-4)",
+        alignItems: "start",
+        padding: "var(--space-5)",
+      }}
     >
       <div
         style={{
           padding: "var(--space-3)",
-          background: "var(--primary-50)",
+          background: "rgba(213, 137, 27, 0.17)",
+          border: "1px solid rgba(213, 137, 27, 0.34)",
           borderRadius: "var(--radius-md)",
-          color: "var(--primary-600)",
+          color: "var(--chalk-200)",
         }}
       >
         <Icon size={24} />
@@ -126,7 +155,7 @@ export default function HostDashboard() {
         <p
           style={{
             fontSize: "var(--text-sm)",
-            color: "var(--gray-500)",
+            color: "var(--chalk-ink)",
             marginBottom: "var(--space-2)",
           }}
         >
@@ -182,7 +211,7 @@ export default function HostDashboard() {
       </div>
 
       {/* Recent Bookings */}
-      <div className="card">
+      <div className="card" style={{ padding: "var(--space-5)" }}>
         <div style={{ marginBottom: "var(--space-4)" }}>
           <h2
             style={{
@@ -193,7 +222,7 @@ export default function HostDashboard() {
           >
             Recent Bookings
           </h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--chalk-ink)" }}>
             Latest 5 bookings from your properties
           </p>
         </div>
@@ -201,7 +230,7 @@ export default function HostDashboard() {
         {recentBookings.length === 0 ? (
           <p
             style={{
-              color: "var(--gray-500)",
+              color: "var(--chalk-ink)",
               textAlign: "center",
               padding: "var(--space-6)",
             }}
@@ -221,14 +250,16 @@ export default function HostDashboard() {
               }}
             >
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--gray-200)" }}>
+                <tr
+                  style={{ borderBottom: "1px solid rgba(213, 137, 27, 0.24)" }}
+                >
                   <th
                     style={{
                       padding: "var(--space-3)",
                       textAlign: "left",
                       fontWeight: "600",
                       fontSize: "var(--text-sm)",
-                      color: "var(--gray-600)",
+                      color: "var(--chalk-300)",
                     }}
                   >
                     Guest
@@ -239,7 +270,7 @@ export default function HostDashboard() {
                       textAlign: "left",
                       fontWeight: "600",
                       fontSize: "var(--text-sm)",
-                      color: "var(--gray-600)",
+                      color: "var(--chalk-300)",
                     }}
                   >
                     Property
@@ -250,7 +281,7 @@ export default function HostDashboard() {
                       textAlign: "left",
                       fontWeight: "600",
                       fontSize: "var(--text-sm)",
-                      color: "var(--gray-600)",
+                      color: "var(--chalk-300)",
                     }}
                   >
                     Dates
@@ -261,7 +292,7 @@ export default function HostDashboard() {
                       textAlign: "left",
                       fontWeight: "600",
                       fontSize: "var(--text-sm)",
-                      color: "var(--gray-600)",
+                      color: "var(--chalk-300)",
                     }}
                   >
                     Amount
@@ -272,7 +303,7 @@ export default function HostDashboard() {
                       textAlign: "left",
                       fontWeight: "600",
                       fontSize: "var(--text-sm)",
-                      color: "var(--gray-600)",
+                      color: "var(--chalk-300)",
                     }}
                   >
                     Status
@@ -283,7 +314,9 @@ export default function HostDashboard() {
                 {recentBookings.map((booking) => (
                   <tr
                     key={booking.id}
-                    style={{ borderBottom: "1px solid var(--gray-100)" }}
+                    style={{
+                      borderBottom: "1px solid rgba(213, 137, 27, 0.14)",
+                    }}
                   >
                     <td
                       style={{
@@ -322,17 +355,11 @@ export default function HostDashboard() {
                     <td style={{ padding: "var(--space-3)" }}>
                       <span
                         style={{
+                          ...getStatusTone(booking.status),
                           fontSize: "var(--text-xs)",
                           fontWeight: "600",
                           padding: "4px 8px",
                           borderRadius: "4px",
-                          background:
-                            booking.status === "confirmed"
-                              ? "var(--success)"
-                              : booking.status === "pending"
-                                ? "var(--warning)"
-                                : "var(--error)",
-                          color: "var(--white)",
                         }}
                       >
                         {booking.status.charAt(0).toUpperCase() +

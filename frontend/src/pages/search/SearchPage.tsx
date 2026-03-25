@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Brain, Filter, Sparkles, Search, WandSparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyCard from "../../components/property/PropertyCard";
+import NearBy from "../property/NearBy";
 import {
   searchService,
   type SearchFilters,
@@ -214,7 +215,7 @@ export default function SearchPage() {
         </p>
       </div>
 
-      <div className="card" style={{ marginBottom: "var(--space-6)" }}>
+      <div className="card card-body" style={{ marginBottom: "var(--space-6)" }}>
         <form
           onSubmit={runSearch}
           style={{ display: "grid", gap: "var(--space-4)" }}
@@ -398,7 +399,7 @@ export default function SearchPage() {
               alignItems: "center",
             }}
           >
-            <p style={{ color: "var(--gray-600)", margin: 0 }}>
+            <p style={{ color: "var(--gray-300)", margin: 0 }}>
               <Filter
                 size={14}
                 style={{ verticalAlign: "middle", marginRight: 6 }}
@@ -454,7 +455,7 @@ export default function SearchPage() {
           <p
             style={{
               margin: 0,
-              color: "var(--gray-700)",
+              color: "var(--gray-300)",
               fontSize: "var(--text-sm)",
             }}
           >
@@ -490,34 +491,62 @@ export default function SearchPage() {
           </p>
         </div>
       ) : (
-        <>
-          <div className="list">
-            {results.map((property) => (
-              <PropertyCard
-                key={property.id}
-                property={property}
-                onClick={() => navigate(`/properties/${property.id}`)}
-              />
-            ))}
+        <div className="layout">
+          <div>
+            <div className="list">
+              {results.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onClick={() => navigate(`/properties/${property.id}`)}
+                />
+              ))}
+            </div>
+
+            <div ref={sentinelRef} style={{ height: 1 }} />
+
+            {(isLoadingMore || hasMore) && (
+              <div
+                style={{
+                  marginTop: "var(--space-5)",
+                  textAlign: "center",
+                  color: "var(--gray-400)",
+                  fontSize: "var(--text-sm)",
+                }}
+              >
+                {isLoadingMore
+                  ? "Loading more results..."
+                  : "Scroll to load more"}
+              </div>
+            )}
           </div>
 
-          <div ref={sentinelRef} style={{ height: 1 }} />
-
-          {(isLoadingMore || hasMore) && (
+          <div className="sidebar">
             <div
               style={{
-                marginTop: "var(--space-5)",
-                textAlign: "center",
-                color: "var(--gray-500)",
-                fontSize: "var(--text-sm)",
+                padding: "var(--space-4)",
+                borderBottom: "1px solid rgba(213, 137, 27, 0.2)",
+                background: "rgba(17, 13, 10, 0.6)",
+                backdropFilter: "blur(16px)",
+                borderRadius: "var(--radius-xl) var(--radius-xl) 0 0",
               }}
             >
-              {isLoadingMore
-                ? "Loading more results..."
-                : "Scroll to load more"}
+              <h3
+                style={{
+                  fontSize: "var(--text-base)",
+                  fontWeight: "var(--font-semibold)",
+                  color: "var(--gray-50)",
+                  margin: 0,
+                }}
+              >
+                Properties near you
+              </h3>
             </div>
-          )}
-        </>
+            <div style={{ background: "rgba(17, 13, 10, 0.6)", backdropFilter: "blur(16px)", borderRadius: "0 0 var(--radius-xl) var(--radius-xl)", overflow: "hidden" }}>
+              <NearBy />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -7,10 +7,35 @@ type props = {
   properties?: NearByProperty[];
   userLat?: number;
   userLng?: number;
+  focusLat?: number;
+  focusLng?: number;
 };
 
-export default function MapView({ properties = [], userLat, userLng }: props) {
-  if (!userLat || !userLng) return null;
+export default function MapView({
+  properties = [],
+  userLat,
+  userLng,
+  focusLat,
+  focusLng,
+}: props) {
+  const parseCoordinate = (value: unknown) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const parsedFocusLat = parseCoordinate(focusLat);
+  const parsedFocusLng = parseCoordinate(focusLng);
+  const parsedUserLat = parseCoordinate(userLat);
+  const parsedUserLng = parseCoordinate(userLng);
+
+  const hasFocus = parsedFocusLat !== null && parsedFocusLng !== null;
+  const hasUser = parsedUserLat !== null && parsedUserLng !== null;
+
+  if (!hasFocus && !hasUser) return null;
+
+  const centerLat = hasFocus ? parsedFocusLat! : parsedUserLat!;
+  const centerLng = hasFocus ? parsedFocusLng! : parsedUserLng!;
+
   const userIcon = new L.Icon({
     iconUrl: "/user-marker.png",
     iconSize: [30, 30],
@@ -26,25 +51,32 @@ export default function MapView({ properties = [], userLat, userLng }: props) {
   });
   return (
     <MapContainer
-      center={[userLat, userLng]}
-      zoom={12}
-      style={{ height: "100vh", width: "100%", position: "relative" }}
+      center={[centerLat, centerLng]}
+      zoom={13}
+      style={{ height: "100%", width: "100%", position: "relative" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <LocateLiveBtn lat={userLat} lng={userLng} />
-      <MapFollower lat={userLat} lng={userLng} />
-      <Marker position={[userLat, userLng]} icon={userIcon}>
-        <Popup>You are here</Popup>
-      </Marker>
+      {hasUser && <LocateLiveBtn lat={parsedUserLat!} lng={parsedUserLng!} />}
+      <MapFollower lat={centerLat} lng={centerLng} />
+      {hasUser && (
+        <Marker position={[parsedUserLat!, parsedUserLng!]} icon={userIcon}>
+          <Popup>You are here</Popup>
+        </Marker>
+      )}
 
-      {properties.map((p) =>
-        p.lat && p.lng ? (
+      {properties.map((p) => {
+        const propertyLat = parseCoordinate(p.lat);
+        const propertyLng = parseCoordinate(p.lng);
+
+        if (propertyLat === null || propertyLng === null) return null;
+
+        return (
           <Marker
             key={p.id}
-            position={[p.lat, p.lng]}
+            position={[propertyLat, propertyLng]}
             icon={propertyIcon}
             title={p.title}
           >
@@ -56,8 +88,8 @@ export default function MapView({ properties = [], userLat, userLng }: props) {
               </div>
             </Popup>
           </Marker>
-        ) : null,
-      )}
+        );
+      })}
     </MapContainer>
   );
 }

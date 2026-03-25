@@ -63,7 +63,7 @@ export const Profile = () => {
     const roleStyles: Record<string, { bg: string; color: string }> = {
       HOST: { bg: "var(--primary-100)", color: "var(--primary-700)" },
       ADMIN: { bg: "#fee2e2", color: "#991b1b" },
-      USER: { bg: "var(--gray-100)", color: "var(--gray-700)" },
+      USER: { bg: "rgba(213, 137, 27, 0.2)", color: "var(--gray-300)" },
     };
     const style = roleStyles[role] || roleStyles.USER;
     return (

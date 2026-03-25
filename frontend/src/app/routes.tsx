@@ -12,6 +12,7 @@ import ForgotPassword from "../pages/auth/forgotPassword";
 import OtpVerification from "../pages/auth/OtpVerification";
 import { Profile } from "../pages/profile/profile";
 import UpdateProfile from "../pages/profile/updateProfile";
+import LandingPage from "../pages/home/LandingPage";
 import PropertyList from "../pages/property/propertyList";
 import PropertyDetails from "../pages/property/propertyDetails";
 import CreateProperty from "../pages/property/CreateProperty";
@@ -79,7 +80,8 @@ export default function AppRoutes() {
       />
 
       {/* Property Routes */}
-      <Route path="/" element={<PropertyList />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/properties" element={<PropertyList />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/properties/:id" element={<PropertyDetails />} />
       <Route path="/nearby" element={<NearBy />} />

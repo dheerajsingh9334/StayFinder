@@ -12,6 +12,7 @@ import AppErrorBoundary from "../components/ui/AppErrorBoundary";
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   // Hide navbar/footer on auth pages
   const isAuthPage = ["/login", "/register", "/otp-verification"].includes(
@@ -53,7 +54,13 @@ const App = () => {
         }}
       />
       {!isAuthPage && <Navbar />}
-      <main className={isAuthPage ? "" : "main-content"}>
+      <main
+        className={
+          isAuthPage
+            ? ""
+            : `main-content ${isHomePage ? "main-content-home" : ""}`
+        }
+      >
         <AppErrorBoundary>
           <AppRoutes />
         </AppErrorBoundary>

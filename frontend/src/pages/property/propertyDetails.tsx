@@ -56,7 +56,16 @@ export default function PropertyDetails() {
     return <Loader size="lg" text="Loading property details..." />;
   }
 
+  const parseCoordinate = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return null;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
   const isOwner = user?.id === current.owner?.id;
+  const propertyLat = parseCoordinate(current.lat);
+  const propertyLng = parseCoordinate(current.lng);
+  const hasPropertyCoordinates = propertyLat !== null && propertyLng !== null;
   const mainImage =
     current.images?.[0] ||
     "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200";
@@ -126,7 +135,7 @@ export default function PropertyDetails() {
   };
 
   return (
-    <div>
+    <div className="property-details-page">
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
@@ -162,7 +171,7 @@ export default function PropertyDetails() {
             )}
           </div>
 
-          <div className="property-content">
+          <div className="property-content property-content-card">
             {/* Header */}
             <div className="property-header">
               <div
@@ -177,8 +186,11 @@ export default function PropertyDetails() {
                   <div className="property-location">
                     <MapPin size={18} />
                     <span>
-                      {current.address || current.city}, {current.state},{" "}
-                      {current.country}
+                      {current.address ||
+                        current.city ||
+                        "Location unavailable"}
+                      {current.state ? `, ${current.state}` : ""}
+                      {current.country ? `, ${current.country}` : ""}
                     </span>
                   </div>
                 </div>
@@ -285,24 +297,32 @@ export default function PropertyDetails() {
                 <div className="property-section">
                   <h3 className="property-section-title">Location</h3>
                   <div className="map-container">
-                    <MapView
-                      properties={[
-                        {
-                          id: current.id,
-                          title: current.title,
-                          price: current.price,
-                          state: current.state,
-                          city: current.city,
-                          lat: current.lat ?? null,
-                          lng: current.lng ?? null,
-                          images: current.images ?? [],
-                          averageRating: current.averageRating ?? 0,
-                          availability: current.availability ?? [],
-                        },
-                      ]}
-                      userLat={userlocation?.lat}
-                      userLng={userlocation?.lng}
-                    />
+                    {hasPropertyCoordinates ? (
+                      <MapView
+                        properties={[
+                          {
+                            id: current.id,
+                            title: current.title,
+                            price: current.price,
+                            state: current.state,
+                            city: current.city,
+                            lat: propertyLat ?? null,
+                            lng: propertyLng ?? null,
+                            images: current.images ?? [],
+                            averageRating: current.averageRating ?? 0,
+                            availability: current.availability ?? [],
+                          },
+                        ]}
+                        userLat={userlocation?.lat}
+                        userLng={userlocation?.lng}
+                        focusLat={propertyLat ?? undefined}
+                        focusLng={propertyLng ?? undefined}
+                      />
+                    ) : (
+                      <div className="property-map-fallback">
+                        Property location coordinates are not available.
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -410,7 +430,7 @@ export default function PropertyDetails() {
         </div>
 
         {/* Booking Sidebar */}
-        <div className="booking-sidebar">
+        <div className="booking-sidebar property-booking-sidebar">
           <div className="booking-sidebar-header">
             <div className="booking-price">
               ₹{current.price.toLocaleString()}

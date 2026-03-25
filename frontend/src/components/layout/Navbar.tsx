@@ -13,7 +13,8 @@ import {
   Calendar,
   Menu,
   X,
-  MapPin,
+  Heart,
+  Bell,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -65,20 +66,24 @@ export default function Navbar() {
       .slice(0, 2);
   };
 
+  const isLandingPage = location.pathname === "/";
+
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isLandingPage ? "navbar-overlay" : ""}`}>
       <div className="navbar-container">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
           <Home size={28} />
-          <span>StayFinder</span>
+          <span className="navbar-logo-block">
+            <strong>StayFinder</strong>
+            <small>Book smart, stay better.</small>
+          </span>
         </Link>
 
         {/* Search Bar - Desktop */}
         <form
-          className="search-bar"
+          className="search-bar navbar-search"
           onSubmit={handleSearchSubmit}
-          style={{ maxWidth: "400px", flex: 1, margin: "0 var(--space-6)" }}
         >
           <Search size={18} className="search-bar-icon" />
           <input
@@ -96,13 +101,6 @@ export default function Navbar() {
             className={`navbar-link ${isActive("/") ? "active" : ""}`}
           >
             Explore
-          </Link>
-          <Link
-            to="/nearby"
-            className={`navbar-link ${isActive("/nearby") ? "active" : ""}`}
-          >
-            <MapPin size={16} style={{ marginRight: "4px" }} />
-            Nearby
           </Link>
           <Link
             to="/search"
@@ -139,111 +137,135 @@ export default function Navbar() {
         <div className="navbar-actions">
           {isAuthenticated && user ? (
             <div
-              className={`dropdown ${isDropdownOpen ? "open" : ""}`}
-              ref={dropdownRef}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--space-2)",
+              }}
             >
-              <div
-                className="navbar-avatar"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              <Link
+                to="/favorites"
+                className="btn btn-icon btn-ghost"
+                title="Favorites"
               >
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} />
-                ) : (
-                  getInitials(user.name)
-                )}
-              </div>
+                <Heart size={20} />
+              </Link>
+              <Link
+                to="/notifications"
+                className="btn btn-icon btn-ghost"
+                title="Notifications"
+              >
+                <Bell size={20} />
+              </Link>
 
-              <div className="dropdown-menu">
+              <div
+                className={`dropdown ${isDropdownOpen ? "open" : ""}`}
+                ref={dropdownRef}
+                style={{ marginLeft: "var(--space-2)" }}
+              >
                 <div
-                  style={{
-                    padding: "var(--space-3) var(--space-4)",
-                    borderBottom: "1px solid var(--gray-100)",
-                  }}
+                  className="navbar-avatar"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <p
-                    style={{
-                      fontWeight: "var(--font-semibold)",
-                      color: "var(--gray-900)",
-                      marginBottom: "2px",
-                    }}
-                  >
-                    {user.name}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: "var(--text-xs)",
-                      color: "var(--gray-500)",
-                    }}
-                  >
-                    {user.email}
-                  </p>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} />
+                  ) : (
+                    getInitials(user.name)
+                  )}
                 </div>
 
-                <Link
-                  to="/profile"
-                  className="dropdown-item"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <User size={16} />
-                  Profile
-                </Link>
-
-                <Link
-                  to="/mybooking"
-                  className="dropdown-item"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <Calendar size={16} />
-                  My Bookings
-                </Link>
-
-                {user.role === "HOST" && (
-                  <>
-                    <Link
-                      to="/host-panel"
-                      className="dropdown-item"
-                      onClick={() => setIsDropdownOpen(false)}
+                <div className="dropdown-menu">
+                  <div
+                    style={{
+                      padding: "var(--space-3) var(--space-4)",
+                      borderBottom: "1px solid var(--gray-100)",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: "var(--font-semibold)",
+                        color: "var(--gray-50)",
+                        marginBottom: "2px",
+                      }}
                     >
-                      <Building2 size={16} />
-                      Host Panel
-                    </Link>
-                    <Link
-                      to="/Myproperty"
-                      className="dropdown-item"
-                      onClick={() => setIsDropdownOpen(false)}
+                      {user.name}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "var(--text-xs)",
+                        color: "var(--gray-500)",
+                      }}
                     >
-                      <Building2 size={16} />
-                      My Properties
-                    </Link>
-                  </>
-                )}
+                      {user.email}
+                    </p>
+                  </div>
 
-                <div className="dropdown-divider" />
+                  <Link
+                    to="/profile"
+                    className="dropdown-item"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <User size={16} />
+                    Profile
+                  </Link>
 
-                <button
-                  className="dropdown-item danger"
-                  onClick={handleLogout}
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    background: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
+                  <Link
+                    to="/mybooking"
+                    className="dropdown-item"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <Calendar size={16} />
+                    My Bookings
+                  </Link>
+
+                  {user.role === "HOST" && (
+                    <>
+                      <Link
+                        to="/host-panel"
+                        className="dropdown-item"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <Building2 size={16} />
+                        Host Panel
+                      </Link>
+                      <Link
+                        to="/Myproperty"
+                        className="dropdown-item"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <Building2 size={16} />
+                        My Properties
+                      </Link>
+                    </>
+                  )}
+
+                  <div className="dropdown-divider" />
+
+                  <button
+                    className="dropdown-item danger"
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
-            <>
+            <div className="navbar-auth-actions">
               <Link to="/login" className="btn btn-ghost">
                 Log in
               </Link>
               <Link to="/register" className="btn btn-primary">
                 Sign up
               </Link>
-            </>
+            </div>
           )}
 
           {/* Mobile Menu Toggle */}
@@ -265,9 +287,11 @@ export default function Navbar() {
             top: "100%",
             left: 0,
             right: 0,
-            background: "var(--white)",
-            borderTop: "1px solid var(--gray-100)",
-            boxShadow: "var(--shadow-lg)",
+            background: "rgba(17, 13, 10, 0.8)",
+            borderTop: "1px solid rgba(213, 137, 27, 0.24)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            boxShadow: "0 16px 40px rgba(0, 0, 0, 0.35)",
             padding: "var(--space-4)",
             display: "flex",
             flexDirection: "column",
@@ -280,13 +304,6 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Explore
-          </Link>
-          <Link
-            to="/nearby"
-            className="navbar-link"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Nearby
           </Link>
           <Link
             to="/search"

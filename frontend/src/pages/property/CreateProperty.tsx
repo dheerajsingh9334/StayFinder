@@ -149,7 +149,7 @@ export default function CreateProperty() {
             </div>
             <span style={{ 
               fontSize: "var(--text-sm)", 
-              color: step >= num ? "var(--gray-900)" : "var(--gray-500)",
+              color: step >= num ? "var(--gray-50)" : "var(--gray-500)",
               fontWeight: step === num ? "var(--font-medium)" : "var(--font-normal)"
             }}>
               {label}
@@ -272,7 +272,7 @@ export default function CreateProperty() {
                         borderRadius: "var(--radius-lg)",
                         cursor: "pointer",
                         transition: "all var(--transition-fast)",
-                        color: form.amenities.includes(amenity.id) ? "var(--primary-700)" : "var(--gray-700)",
+                        color: form.amenities.includes(amenity.id) ? "var(--primary-400)" : "var(--gray-300)",
                         fontSize: "var(--text-sm)",
                         fontWeight: "var(--font-medium)"
                       }}

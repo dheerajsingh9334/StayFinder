@@ -96,28 +96,28 @@ export default function HostPanel() {
           marginBottom: "var(--space-6)",
         }}
       >
-        <div className="card">
+        <div className="card card-body">
           <Building2 size={18} />
           <h3>Total Properties</h3>
           <p style={{ fontSize: "2rem", fontWeight: 700 }}>
             {stats.totalProperties}
           </p>
         </div>
-        <div className="card">
+        <div className="card card-body">
           <CalendarDays size={18} />
           <h3>Total Bookings</h3>
           <p style={{ fontSize: "2rem", fontWeight: 700 }}>
             {stats.totalBookings}
           </p>
         </div>
-        <div className="card">
+        <div className="card card-body">
           <CircleDollarSign size={18} />
           <h3>Total Revenue</h3>
           <p style={{ fontSize: "2rem", fontWeight: 700 }}>
             ₹{stats.totalRevenue.toLocaleString()}
           </p>
         </div>
-        <div className="card">
+        <div className="card card-body">
           <Star size={18} />
           <h3>Average Rating</h3>
           <p style={{ fontSize: "2rem", fontWeight: 700 }}>
@@ -126,7 +126,7 @@ export default function HostPanel() {
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: "var(--space-6)" }}>
+      <div className="card card-body" style={{ marginBottom: "var(--space-6)" }}>
         <h2 style={{ marginTop: 0 }}>Host Quick Actions</h2>
         <div
           style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}
@@ -150,7 +150,7 @@ export default function HostPanel() {
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: "var(--space-6)" }}>
+      <div className="card card-body" style={{ marginBottom: "var(--space-6)" }}>
         <h2 style={{ marginTop: 0 }}>My Properties</h2>
         {properties.length === 0 ? (
           <p>No properties yet.</p>
@@ -189,7 +189,7 @@ export default function HostPanel() {
         )}
       </div>
 
-      <div className="card">
+      <div className="card card-body">
         <h2 style={{ marginTop: 0 }}>Recent Bookings</h2>
         {bookings.length === 0 ? (
           <p>No bookings found yet.</p>

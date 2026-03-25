@@ -22,9 +22,10 @@ export default function CalendarView({
   const { propertyId: routePropertyId } = useParams<{ propertyId: string }>();
   const propertyId = propPropertyId ?? routePropertyId;
   const [value, setValue] = useState<Dayjs | null>(dayjs());
+  const [visibleMonth, setVisibleMonth] = useState(dayjs().startOf("month"));
 
-  const startDate = dayjs().startOf("month").format("YYYY-MM-DD");
-  const endDate = dayjs().endOf("month").format("YYYY-MM-DD");
+  const startDate = visibleMonth.startOf("month").format("YYYY-MM-DD");
+  const endDate = visibleMonth.endOf("month").format("YYYY-MM-DD");
 
   const { data, isLoading, isError } = useAvailability(
     propertyId,
@@ -37,7 +38,11 @@ export default function CalendarView({
   }
 
   if (isLoading) {
-    return <ThreeDot color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />;
+    return (
+      <div style={{ display: "grid", placeItems: "center", minHeight: 220 }}>
+        <ThreeDot color={["#3158d4", "#2563eb", "#5b7df0", "#9fbfff"]} />
+      </div>
+    );
   }
 
   if (isError || !data) {
@@ -50,32 +55,35 @@ export default function CalendarView({
     calendarDays.map((d: DayInfo) => [d.date.split("T")[0], d]),
   );
 
-  const statusStyle: Record<string, { bg: string; text: string }> = {
-    AVAILABLE: { bg: "#d9f99d", text: "#365314" },
-    BLOCKED: { bg: "#fecaca", text: "#7f1d1d" },
-    FULL: { bg: "#fed7aa", text: "#9a3412" },
-    UNAVAILABLE: { bg: "#fecaca", text: "#7f1d1d" },
-    BOOKED: { bg: "#fed7aa", text: "#9a3412" },
-    PARTIAL: { bg: "#fde68a", text: "#92400e" },
+  const statusStyle: Record<
+    string,
+    { bg: string; text: string; border: string }
+  > = {
+    AVAILABLE: { bg: "#e8f8f1", text: "#16885f", border: "#b8efd8" },
+    BLOCKED: { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+    FULL: { bg: "#fff7ed", text: "#b45309", border: "#fed7aa" },
+    UNAVAILABLE: { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+    BOOKED: { bg: "#fff7ed", text: "#b45309", border: "#fed7aa" },
+    PARTIAL: { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
   };
-  const defaultDayTone = { bg: "#e2e8f0", text: "#334155" };
+  const defaultDayTone = { bg: "#f8fafc", text: "#64748b", border: "#e2e8f0" };
 
   return (
     <div
       style={{
-        border: "2px solid #0f172a",
-        borderRadius: 20,
-        background:
-          "linear-gradient(165deg, #fef9c3 0%, #fef3c7 42%, #fdf2f8 100%)",
-        boxShadow: "0 16px 30px rgba(15, 23, 42, 0.14)",
+        border: "1px solid var(--gray-100)",
+        borderRadius: 16,
+        background: "var(--white)",
+        boxShadow: "var(--shadow-sm)",
         overflow: "hidden",
       }}
     >
       <div
         style={{
           padding: "14px 16px",
-          background: "#0f172a",
-          color: "#f8fafc",
+          background: "var(--bg-secondary)",
+          color: "var(--gray-600)",
+          borderBottom: "1px solid var(--gray-100)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -92,7 +100,9 @@ export default function CalendarView({
             fontSize: 12,
             padding: "4px 8px",
             borderRadius: 999,
-            background: "rgba(248, 250, 252, 0.16)",
+            background: "var(--primary-50)",
+            border: "1px solid var(--primary-200)",
+            color: "var(--primary-700)",
           }}
         >
           Monthly Snapshot
@@ -110,9 +120,24 @@ export default function CalendarView({
           }}
         >
           {[
-            { label: "Available", color: "#d9f99d", text: "#365314" },
-            { label: "Blocked/Unavailable", color: "#fecaca", text: "#7f1d1d" },
-            { label: "Past Date", color: "#e2e8f0", text: "#475569" },
+            {
+              label: "Available",
+              color: "#e8f8f1",
+              text: "#16885f",
+              border: "#b8efd8",
+            },
+            {
+              label: "Blocked/Unavailable",
+              color: "#fef2f2",
+              text: "#b91c1c",
+              border: "#fecaca",
+            },
+            {
+              label: "Past Date",
+              color: "#f8fafc",
+              text: "#64748b",
+              border: "#e2e8f0",
+            },
           ].map((legend) => (
             <span
               key={legend.label}
@@ -121,7 +146,7 @@ export default function CalendarView({
                 alignItems: "center",
                 gap: 6,
                 padding: "5px 10px",
-                border: `1px solid ${legend.text}`,
+                border: `1px solid ${legend.border}`,
                 background: legend.color,
                 color: legend.text,
                 borderRadius: 999,
@@ -135,6 +160,7 @@ export default function CalendarView({
                   height: 8,
                   borderRadius: 999,
                   background: legend.text,
+                  boxShadow: `0 0 6px ${legend.text}`,
                 }}
               />
               {legend.label}
@@ -146,7 +172,7 @@ export default function CalendarView({
               alignItems: "center",
               gap: 6,
               fontSize: 12,
-              color: "#334155",
+              color: "var(--gray-500)",
             }}
           >
             <TriangleAlert size={13} />
@@ -158,14 +184,30 @@ export default function CalendarView({
           <DateCalendar
             value={value}
             views={["year", "month", "day"]}
-            onChange={(newValue) => setValue(newValue)}
+            onChange={(newValue) => {
+              setValue(newValue);
+              if (newValue) {
+                setVisibleMonth(newValue.startOf("month"));
+              }
+            }}
+            onMonthChange={(newMonth) =>
+              setVisibleMonth(newMonth.startOf("month"))
+            }
             sx={{
               width: "100%",
               maxWidth: "100%",
-              background: "#fff",
+              background: "transparent",
+              color: "var(--gray-600)",
               borderRadius: 16,
-              border: "1px solid #e2e8f0",
+              border: "none",
               p: 1,
+              "& .MuiTypography-root, & .MuiDayCalendar-weekDayLabel, & .MuiPickersCalendarHeader-label":
+                {
+                  color: "var(--gray-500)",
+                },
+              "& .MuiIconButton-root": {
+                color: "var(--primary-600)",
+              },
             }}
             slots={{
               day: (props: PickersDayProps) => {
@@ -182,13 +224,13 @@ export default function CalendarView({
                     {...props}
                     disabled={isPast}
                     sx={{
-                      height: 58,
-                      width: 62,
-                      opacity: isPast ? 0.6 : 1,
+                      height: 56,
+                      width: 58,
+                      opacity: isPast ? 0.5 : 1,
                       position: "relative",
-                      backgroundColor: isPast ? "#e2e8f0" : dayTone.bg,
-                      color: isPast ? "#475569" : dayTone.text,
-                      border: "1px solid #94a3b8",
+                      backgroundColor: isPast ? "#f8fafc" : dayTone.bg,
+                      color: isPast ? "#94a3b8" : dayTone.text,
+                      border: `1px solid ${isPast ? "transparent" : dayTone.border}`,
                       borderRadius: 1,
                       display: "flex",
                       flexDirection: "column",
@@ -200,9 +242,9 @@ export default function CalendarView({
                       <Lock
                         style={{
                           position: "absolute",
-                          top: 2,
-                          right: 2,
-                          color: "#475569",
+                          top: 4,
+                          right: 4,
+                          color: "#94a3b8",
                           width: 12,
                           height: 12,
                         }}
@@ -215,6 +257,7 @@ export default function CalendarView({
                           fontSize: 10,
                           lineHeight: 1.1,
                           textAlign: "center",
+                          fontWeight: 600,
                         }}
                       >
                         {info.status}

@@ -15,9 +15,12 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "var(--gray-900)",
-        color: "var(--gray-300)",
+        background: "var(--bg-primary)",
+        borderTop: "1px solid var(--gray-100)",
+        color: "var(--gray-500)",
         marginTop: "auto",
+        position: "relative",
+        zIndex: 10,
       }}
     >
       <div
@@ -42,7 +45,7 @@ export default function Footer() {
                 display: "flex",
                 alignItems: "center",
                 gap: "var(--space-2)",
-                color: "var(--white)",
+                color: "var(--primary-700)",
                 fontSize: "var(--text-xl)",
                 fontWeight: "var(--font-bold)",
                 marginBottom: "var(--space-4)",
@@ -56,55 +59,65 @@ export default function Footer() {
                 fontSize: "var(--text-sm)",
                 lineHeight: "var(--leading-relaxed)",
                 marginBottom: "var(--space-4)",
+                color: "var(--gray-500)",
               }}
             >
-              Find your perfect stay anywhere in the world. Premium properties,
-              exceptional experiences.
+              Experience the world's most luxurious properties. Masterfully
+              curated, exceptionally designed just for you.
             </p>
             <div style={{ display: "flex", gap: "var(--space-3)" }}>
               <a
-                href="#"
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
                 style={{
                   width: "36px",
                   height: "36px",
-                  background: "var(--gray-800)",
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--gray-200)",
                   borderRadius: "var(--radius-lg)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--gray-400)",
+                  color: "var(--primary-700)",
                   transition: "all var(--transition-fast)",
                 }}
               >
                 <Facebook size={18} />
               </a>
               <a
-                href="#"
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
                 style={{
                   width: "36px",
                   height: "36px",
-                  background: "var(--gray-800)",
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--gray-200)",
                   borderRadius: "var(--radius-lg)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--gray-400)",
+                  color: "var(--primary-700)",
                   transition: "all var(--transition-fast)",
                 }}
               >
                 <Twitter size={18} />
               </a>
               <a
-                href="#"
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
                 style={{
                   width: "36px",
                   height: "36px",
-                  background: "var(--gray-800)",
+                  background: "var(--bg-secondary)",
+                  border: "1px solid var(--gray-200)",
                   borderRadius: "var(--radius-lg)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "var(--gray-400)",
+                  color: "var(--primary-700)",
                   transition: "all var(--transition-fast)",
                 }}
               >
@@ -117,7 +130,7 @@ export default function Footer() {
           <div>
             <h4
               style={{
-                color: "var(--white)",
+                color: "var(--gray-600)",
                 fontSize: "var(--text-base)",
                 fontWeight: "var(--font-semibold)",
                 marginBottom: "var(--space-4)",
@@ -137,7 +150,7 @@ export default function Footer() {
                 <Link
                   to="/"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
@@ -148,34 +161,34 @@ export default function Footer() {
                 <Link
                   to="/nearby"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Nearby
+                  Nearby Locations
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/search"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Top Destinations
-                </a>
+                  Smart Semantic Search
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/reviews"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Reviews
-                </a>
+                  Authentic Reviews
+                </Link>
               </li>
             </ul>
           </div>
@@ -184,7 +197,7 @@ export default function Footer() {
           <div>
             <h4
               style={{
-                color: "var(--white)",
+                color: "var(--gray-600)",
                 fontSize: "var(--text-base)",
                 fontWeight: "var(--font-semibold)",
                 marginBottom: "var(--space-4)",
@@ -204,7 +217,7 @@ export default function Footer() {
                 <Link
                   to="/CreateProperty"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
@@ -212,37 +225,37 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/host-dashboard"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Host Resources
-                </a>
+                  Host Command Center
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/host-panel"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Responsible Hosting
-                </a>
+                  Resources & Panels
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/mybooking"
                   style={{
-                    color: "var(--gray-400)",
+                    color: "var(--gray-500)",
                     fontSize: "var(--text-sm)",
                   }}
                 >
-                  Community Forum
-                </a>
+                  Manage Reservations
+                </Link>
               </li>
             </ul>
           </div>
@@ -251,7 +264,7 @@ export default function Footer() {
           <div>
             <h4
               style={{
-                color: "var(--white)",
+                color: "var(--gray-600)",
                 fontSize: "var(--text-base)",
                 fontWeight: "var(--font-semibold)",
                 marginBottom: "var(--space-4)",
@@ -272,36 +285,40 @@ export default function Footer() {
                   display: "flex",
                   alignItems: "center",
                   gap: "var(--space-2)",
-                  color: "var(--gray-400)",
+                  color: "var(--gray-500)",
                   fontSize: "var(--text-sm)",
                 }}
               >
-                <Mail size={16} />
-                <span>support@stayfinder.com</span>
+                <Mail size={16} color="var(--primary-700)" />
+                <span>concierge@stayfinder.luxury</span>
               </li>
               <li
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "var(--space-2)",
-                  color: "var(--gray-400)",
+                  color: "var(--gray-500)",
                   fontSize: "var(--text-sm)",
                 }}
               >
-                <Phone size={16} />
-                <span>+91 1234 567 890</span>
+                <Phone size={16} color="var(--primary-700)" />
+                <span>+1 800 LUX-STAY</span>
               </li>
               <li
                 style={{
                   display: "flex",
                   alignItems: "flex-start",
                   gap: "var(--space-2)",
-                  color: "var(--gray-400)",
+                  color: "var(--gray-500)",
                   fontSize: "var(--text-sm)",
                 }}
               >
-                <MapPin size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
-                <span>New Delhi, India</span>
+                <MapPin
+                  size={16}
+                  color="var(--primary-700)"
+                  style={{ flexShrink: 0, marginTop: "2px" }}
+                />
+                <span>100 Premium Blvd, New York, US</span>
               </li>
             </ul>
           </div>
@@ -310,7 +327,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div
           style={{
-            borderTop: "1px solid var(--gray-800)",
+            borderTop: "1px solid var(--gray-100)",
             marginTop: "var(--space-8)",
             paddingTop: "var(--space-6)",
             display: "flex",
@@ -321,27 +338,39 @@ export default function Footer() {
           }}
         >
           <p style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}>
-            © {currentYear} StayFinder. All rights reserved.
+            © {currentYear} StayFinder Ultra-Premium. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: "var(--space-6)" }}>
-            <a
-              href="#"
-              style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}
+            <Link
+              to="/privacy"
+              style={{
+                fontSize: "var(--text-sm)",
+                color: "var(--gray-500)",
+                textDecoration: "none",
+              }}
             >
               Privacy Policy
-            </a>
-            <a
-              href="#"
-              style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}
+            </Link>
+            <Link
+              to="/terms"
+              style={{
+                fontSize: "var(--text-sm)",
+                color: "var(--gray-500)",
+                textDecoration: "none",
+              }}
             >
               Terms of Service
-            </a>
-            <a
-              href="#"
-              style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}
+            </Link>
+            <Link
+              to="/cookies"
+              style={{
+                fontSize: "var(--text-sm)",
+                color: "var(--gray-500)",
+                textDecoration: "none",
+              }}
             >
               Cookie Policy
-            </a>
+            </Link>
           </div>
         </div>
       </div>

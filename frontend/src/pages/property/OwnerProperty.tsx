@@ -186,6 +186,7 @@ export default function OwnerProperty() {
                 overflow: "hidden",
                 transition: "transform 0.2s, box-shadow 0.2s",
                 cursor: "pointer",
+                padding: "1.5rem",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-4px)";

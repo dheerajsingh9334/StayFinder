@@ -68,7 +68,7 @@ export default function Home() {
       <section
         style={{
           background:
-            "radial-gradient(circle at 15% 20%, #1e293b 0%, #0f172a 30%, #020617 100%)",
+            "radial-gradient(circle at 18% 20%, rgba(213,137,27,0.22) 0%, rgba(25,31,18,0.94) 34%, rgba(11,40,42,0.9) 100%)",
           color: "white",
           padding: "5rem 1.5rem 4.5rem",
           position: "relative",
@@ -81,7 +81,7 @@ export default function Home() {
             inset: 0,
             opacity: 0.45,
             background:
-              "radial-gradient(circle at 80% 25%, rgba(20,184,166,0.35), transparent 35%), radial-gradient(circle at 25% 75%, rgba(239,68,68,0.3), transparent 38%)",
+              "radial-gradient(circle at 80% 25%, rgba(20,138,136,0.35), transparent 35%), radial-gradient(circle at 25% 75%, rgba(213,137,27,0.26), transparent 38%)",
           }}
         />
 
@@ -493,7 +493,7 @@ export default function Home() {
         style={{
           padding: "5rem 1.5rem",
           background:
-            "linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%)",
+            "linear-gradient(135deg, rgba(17,13,10,0.85) 0%, rgba(11,40,42,0.82) 100%)",
           color: "white",
         }}
       >
