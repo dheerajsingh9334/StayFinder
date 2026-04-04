@@ -61,6 +61,7 @@ export default function Login() {
             type="email"
             label="Email address"
             placeholder="Enter your email"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             disabled={isloading}
@@ -71,6 +72,7 @@ export default function Login() {
             type="password"
             label="Password"
             placeholder="Enter your password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             disabled={isloading}
