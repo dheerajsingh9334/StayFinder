@@ -2,7 +2,7 @@ import cluster from "cluster";
 import os from "os";
 console.log(os.cpus().length);
 
-const Cpu = os.cpus().length - 4;
+const Cpu = os.cpus().length;
 
 if (cluster.isPrimary) {
   console.log("primary process running", process.pid);
