@@ -2,13 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/server.js",
+  "main": "dist/cluster.js",
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "workers": "concurrently \"ts-node src/workers/email.worker.ts\" \"ts-node src/workers/booking.worker.ts\" \"ts-node src/workers/payment.worker.ts\" \"ts-node src/workers/ai.worker.ts\"",
-    "all": "npm run build && concurrently \"node dist/server.js\" \"npm run workers\""
+    "start": "concurrently \"node dist/cluster.js\" \"npm run workers\"",
+    "workers": "concurrently \"node dist/src/workers/email.worker.js\" \"node dist/src/workers/booking.worker.js\" \"node dist/src/workers/payment.worker.js\" \"node dist/src/workers/ai.worker.js\"",
+    "all": "npm run build && npm run start"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
