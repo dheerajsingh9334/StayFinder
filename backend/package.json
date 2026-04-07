@@ -6,15 +6,10 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "start": "node dist/cluster.js",
+    "start": "npm run start:web",
     "start:web": "node dist/cluster.js",
     "start:worker": "concurrently \"node dist/src/workers/email.worker.js\" \"node dist/src/workers/booking.worker.js\" \"node dist/src/workers/payment.worker.js\"",
-    "start:worker:ai": "node dist/src/workers/ai.worker.js",
-    "start:workers:all": "concurrently \"npm run start:worker\" \"npm run start:worker:ai\"",
-    "start:cron": "node dist/src/jobs/booking.crons.js",
-    "deploy:web": "npm run build && npm run start:web",
-    "deploy:worker": "npm run build && npm run start:worker",
-    "deploy:cron": "npm run build && npm run start:cron"
+    "start:worker:ai": "node dist/src/workers/ai.worker.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
