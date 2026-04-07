@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "start": "npm run start:web",
+    "start": "concurrently \"npm run start:web\" \"npm run start:worker\" \"npm run start:worker:ai\"",
     "start:web": "node dist/cluster.js",
     "start:worker": "concurrently \"node dist/src/workers/email.worker.js\" \"node dist/src/workers/booking.worker.js\" \"node dist/src/workers/payment.worker.js\"",
     "start:worker:ai": "node dist/src/workers/ai.worker.js"
