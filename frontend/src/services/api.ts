@@ -83,28 +83,18 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 - try token refresh
+    // Handle 401 - try token refresh using httpOnly cookies
     if (error.response?.status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
+        // Backend stores refresh token in httpOnly cookie.
+        // Calling refresh endpoint is enough to renew access cookie.
+        await api.post("/auth/refreshToken");
 
-        const { data } = await api.post("/auth/refreshToken", {
-          refreshToken,
-        });
-
-        if (data.token) {
-          localStorage.setItem("auth_token", data.token);
-
-          // Retry original request
-          if (originalRequest) {
-            originalRequest.headers.Authorization = `Bearer ${data.token}`;
-            return api(originalRequest);
-          }
+        // Retry original request after cookie refresh.
+        if (originalRequest) {
+          return api(originalRequest);
         }
       } catch (refreshError) {
         // Refresh failed - logout user
