@@ -40,12 +40,20 @@ const App = () => {
             fontSize: "var(--text-sm)",
           },
           success: {
+            style: {
+              background: "var(--success)",
+              color: "var(--white)",
+            },
             iconTheme: {
               primary: "var(--success)",
               secondary: "var(--white)",
             },
           },
           error: {
+            style: {
+              background: "var(--error)",
+              color: "var(--white)",
+            },
             iconTheme: {
               primary: "var(--error)",
               secondary: "var(--white)",
