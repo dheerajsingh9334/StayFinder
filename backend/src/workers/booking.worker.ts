@@ -1,9 +1,24 @@
 import { Worker } from "bullmq";
-import { redisClient, bullmqConnection } from "../config/redis";
+import { bullmqConnection } from "../config/redis";
 import prisma from "../utils/dbconnect";
-import { BookingStatus } from "@prisma/client";
 import eventBus from "../event/event";
 import { bookingQueue } from "../queue/booking.queue";
+
+async function scheduleRecoveryJob() {
+  await bookingQueue.add(
+    "recovery-job",
+    {},
+    {
+      jobId: "booking-recovery-job",
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  );
+}
+
+scheduleRecoveryJob().catch((error) => {
+  console.error("Failed to schedule recovery job:", error);
+});
 
 new Worker(
   "bookingQueue",

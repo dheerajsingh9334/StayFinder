@@ -16,7 +16,6 @@ import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
 
 import { redisClient } from "./src/config/redis";
-import { bookingQueue } from "./src/queue/booking.queue";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -84,15 +83,12 @@ app.use("/api", router);
 async function start() {
   try {
     await connectDB();
-    const res = await redisClient.ping();
-    console.log("redis status", res);
-    await bookingQueue.add(
-      "recovery-job",
-      {},
-      {
-        removeOnComplete: true,
-      },
-    );
+    try {
+      const res = await redisClient.ping();
+      console.log("redis status", res);
+    } catch (redisError) {
+      console.error("Redis ping failed. Continuing startup:", redisError);
+    }
 
     // console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
 
