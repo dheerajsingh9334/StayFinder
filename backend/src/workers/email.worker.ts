@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { Worker } from "bullmq";
-import { redisUrl } from "../config/redis";
+import { bullmqConnection } from "../config/redis";
 import { sendEmail } from "../services/email.service";
 console.log("email worker start");
 new Worker(
@@ -95,8 +95,6 @@ new Worker(
     }
   },
   {
-    connection: {
-      url: redisUrl,
-    },
+    connection: bullmqConnection,
   },
 );

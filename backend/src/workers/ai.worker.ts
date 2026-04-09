@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redisClient, redisUrl } from "../config/redis";
+import { redisClient, bullmqConnection } from "../config/redis";
 import { parseSearchQueryAI } from "../modules/search/aisearchparser";
 import { validatePropertySearchQuery } from "../modules/search/search.validation";
 import { searchProperty } from "../modules/search/search.services";
@@ -41,9 +41,7 @@ new Worker(
     return responseData;
   },
   {
-    connection: {
-      url: redisUrl,
-    },
+    connection: bullmqConnection,
     concurrency: 5,
   },
 );

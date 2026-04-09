@@ -12,14 +12,15 @@ if (!process.env.REDIS_URL) {
   console.warn(`[Redis] REDIS_URL is not defined. Falling back to ${redisUrl}`);
 }
 
+// Singleton ioredis client — used for direct cache operations (SET/GET/DEL)
 export const redisClient = new Redis(redisUrl, {
   db: 0,
   maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
 
-export const redisConnection = {
-  connection: {
-    url: redisUrl,
-    db: 0,
-  },
+// BullMQ connection config — plain object, fully compatible with BullMQ's
+// bundled ioredis types. Shared across all Queues and Workers.
+export const bullmqConnection = {
+  url: redisUrl,
 };

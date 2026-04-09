@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redisClient, redisUrl } from "../config/redis";
+import { redisClient, bullmqConnection } from "../config/redis";
 import prisma from "../utils/dbconnect";
 import { BookingStatus } from "@prisma/client";
 import eventBus from "../event/event";
@@ -69,8 +69,6 @@ new Worker(
     }
   },
   {
-    connection: {
-      url: redisUrl,
-    },
+    connection: bullmqConnection,
   },
 );

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import axios from "axios";
 import { BookingStatus } from "../booking/booking.types";
 import { useCreatePayment } from "./payment.hooks";
 
@@ -93,7 +94,10 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
       const razor = new (window as any).Razorpay(options);
       razor.open();
     } catch (error: any) {
-      toast.error(error?.response?.data?.msg || "Payment Failed");
+      // API errors are already toasted by handleApiError in paymentServices.
+      if (!axios.isAxiosError(error)) {
+        toast.error("Payment failed. Please try again later.");
+      }
     }
   };
 
