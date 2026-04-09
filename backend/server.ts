@@ -24,51 +24,27 @@ app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
 
-const staticAllowedOrigins = [
-  "http://localhost:5173",
-  "https://stay-finder-blue.vercel.app",
-];
-
-const envAllowedOrigins = (process.env.CORS_ORIGINS || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
-const allowedOrigins = [...staticAllowedOrigins, ...envAllowedOrigins].map(
-  (origin) => origin.replace(/\/$/, ""),
-);
-
-const allowedOriginPatterns = [
-  /^https:\/\/.*\.vercel\.app$/,
-  /^https:\/\/.*\.onrender\.com$/,
-];
-
-const isAllowedOrigin = (origin: string) => {
-  const normalized = origin.replace(/\/$/, "");
-  return (
-    allowedOrigins.includes(normalized) ||
-    allowedOriginPatterns.some((pattern) => pattern.test(normalized))
-  );
-};
+const frontendUrl = (
+  process.env.CLIENT_URL || "https://stay-finder-blue.vercel.app"
+).replace(/\/$/, "");
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || isAllowedOrigin(origin)) {
+      if (!origin) {
         cb(null, true);
         return;
       }
 
-      cb(new Error(`CORS blocked for origin: ${origin}`));
+      if (origin.replace(/\/$/, "") !== frontendUrl) {
+        cb(new Error(`CORS blocked for origin: ${origin}`));
+        return;
+      }
+
+      cb(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Request-ID",
-      "X-Request-Time",
-    ],
   }),
 );
 
