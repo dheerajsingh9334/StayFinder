@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProperties } from "../../features/property/property.hooks";
+import { useFavorites, useToggleFavorite } from "../../features/favorites/favorites.hooks";
 import { Search, SlidersHorizontal } from "lucide-react";
 import PropertyCard from "../../components/property/PropertyCard";
 import Loader from "../../components/ui/Loader";
@@ -14,6 +15,8 @@ export default function PropertyList() {
   const [allItems, setAllItems] = useState<PropertyPayload[]>([]);
   const [totalPage, setTotalPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const { data: favoriteList } = useFavorites();
+  const { mutate: toggleFavorite } = useToggleFavorite();
   const { data, isLoading, isError, isFetching } = useProperties(page);
 
   useEffect(() => {
@@ -112,6 +115,8 @@ export default function PropertyList() {
                   <PropertyCard
                     key={property.id}
                     property={property}
+                    isFavorite={favoriteList?.has(property.id) ?? false}
+                    onFavorite={(id) => toggleFavorite({ propertyId: id, isFavorite: favoriteList?.has(id) ?? false })}
                     onClick={() => navigate(`/properties/${property.id}`)}
                   />
                 ))}

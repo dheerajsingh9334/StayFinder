@@ -23,9 +23,10 @@ export default function AdminDashboard() {
   const fetchAdminStats = async () => {
     try {
       setIsLoading(true);
-      const [propertiesRes, bookingsRes] = await Promise.allSettled([
+      const [propertiesRes, bookingsRes, usersRes] = await Promise.allSettled([
         api.get("/property?page=1"),
         api.get("/booking/my-booking"),
+        api.get("/admin/users"),
       ]);
 
       const totalProperties =
@@ -46,8 +47,13 @@ export default function AdminDashboard() {
           )
         : 0;
 
+      const totalUsers =
+        usersRes.status === "fulfilled"
+          ? usersRes.value.data?.users?.length || 0
+          : 0;
+
       setStats({
-        totalUsers: 0,
+        totalUsers,
         totalProperties,
         totalBookings,
         totalRevenue,
@@ -116,7 +122,7 @@ export default function AdminDashboard() {
           <>
             <StatCard
               icon={Users}
-              label="Total Users (N/A)"
+              label="Total Users"
               value={stats.totalUsers}
             />
             <StatCard
@@ -159,7 +165,7 @@ export default function AdminDashboard() {
           }}
         >
           <a
-            href="#"
+            href="/admin-dashboard/users"
             className="card"
             style={{
               textDecoration: "none",
@@ -191,7 +197,7 @@ export default function AdminDashboard() {
           </a>
 
           <a
-            href="#"
+            href="/admin-dashboard/properties"
             className="card"
             style={{
               textDecoration: "none",

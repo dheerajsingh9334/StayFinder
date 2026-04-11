@@ -6,8 +6,29 @@ import { parseSearchQueryAI } from "./aisearchparser";
 
 import { redisClient } from "../../config/redis";
 import { addAiSearchJob } from "../../jobs/ai.job";
+import { aiQueue } from "../../queue/ai.queue";
 
 export default class SearchController {
+  private static runAiSearchDirect = async (text: string) => {
+    const normalized = text.toLowerCase().replace(/\s+/g, " ").trim();
+    const fallbackKey = `ai:result:${normalized}`;
+    const query = await parseSearchQueryAI(normalized);
+
+    if (!query || typeof query !== "object") {
+      throw new Error("Invalid parsed query");
+    }
+
+    validatePropertySearchQuery(query as PropertySerachQuery);
+    const properties = await searchProperty(query as PropertySerachQuery);
+    const responseData = {
+      msg: "Property fetched successfully",
+      ...properties,
+    };
+
+    await redisClient.set(fallbackKey, JSON.stringify(responseData), "EX", 300);
+    return responseData;
+  };
+
   static searchProperty = async (req: Request, res: Response) => {
     try {
       const query = req.query as unknown as PropertySerachQuery;
@@ -58,6 +79,13 @@ export default class SearchController {
 
       console.log("❌ Cache MISS");
 
+      const aiWorkers = await aiQueue.getWorkersCount();
+      if (aiWorkers === 0) {
+        // No worker online in this environment, so avoid fixed queue wait.
+        const result = await SearchController.runAiSearchDirect(text);
+        return res.status(200).json(result);
+      }
+
       // 🔥 STEP 2: add job (only once)
       await addAiSearchJob(normalized);
 
@@ -83,27 +111,7 @@ export default class SearchController {
       if (error?.message === "timeout") {
         try {
           const { text } = req.body;
-          const normalized = text.toLowerCase().replace(/\s+/g, " ").trim();
-          const fallbackKey = `ai:result:${normalized}`;
-          const query = await parseSearchQueryAI(normalized);
-
-          if (!query || typeof query !== "object") {
-            throw new Error("Invalid parsed query");
-          }
-
-          validatePropertySearchQuery(query as PropertySerachQuery);
-          const properties = await searchProperty(query as PropertySerachQuery);
-          const responseData = {
-            msg: "Property fetched successfully",
-            ...properties,
-          };
-
-          await redisClient.set(
-            fallbackKey,
-            JSON.stringify(responseData),
-            "EX",
-            60,
-          );
+          const responseData = await SearchController.runAiSearchDirect(text);
           return res.status(200).json(responseData);
         } catch (fallbackError: any) {
           console.log("AI fallback failed", fallbackError?.message);

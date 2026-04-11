@@ -4,6 +4,8 @@ export interface PropertySerachQuery {
   minPrice?: number;
   maxPrice?: number;
   capacity?: number;
+  bedrooms?: number;
+  bathrooms?: number;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -12,5 +14,6 @@ export interface PropertySerachQuery {
   page?: number;
   limit?: number;
   amenities?: string[];
+  sortBy?: string;
 }
 // Add hasSome vs hasEvery toggle

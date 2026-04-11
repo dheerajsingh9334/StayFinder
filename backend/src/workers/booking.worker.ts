@@ -1,8 +1,8 @@
 import { Worker } from "bullmq";
 import { bullmqConnection } from "../config/redis";
 import prisma from "../utils/dbconnect";
-import eventBus from "../event/event";
 import { bookingQueue } from "../queue/booking.queue";
+import { emailQueue } from "../queue/email.queue";
 
 async function scheduleRecoveryJob() {
   await bookingQueue.add(
@@ -28,13 +28,23 @@ new Worker(
         const { bookingId } = job.data;
         const booking = await prisma.booking.findUnique({
           where: { id: bookingId },
+          include: {
+            property: true,
+            user: true,
+          },
         });
         if (booking?.status === "PENDING_PAYMENT") {
-          await prisma.booking.update({
+          const cancelledBooking = await prisma.booking.update({
             where: { id: bookingId },
             data: { status: "CANCELLED" },
           });
-          eventBus.emit("BOOKING_CANCELLED", { bookingId });
+
+          await emailQueue.add("booking-cancelled-email", {
+            booking: {
+              ...booking,
+              status: cancelledBooking.status,
+            },
+          });
         }
         break;
       }
@@ -44,7 +54,21 @@ new Worker(
           where: { id: bookingId },
           data: { status: "COMPLETED" },
         });
-        eventBus.emit("BOOKING_COMPLETED", { bookingId });
+
+        const completedBooking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: {
+            property: true,
+            user: true,
+          },
+        });
+
+        if (completedBooking) {
+          await emailQueue.add("booking-completed-email", {
+            booking: completedBooking,
+          });
+        }
+
         break;
       }
       case "recovery-job": {

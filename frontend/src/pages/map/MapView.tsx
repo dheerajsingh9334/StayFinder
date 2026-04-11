@@ -67,29 +67,34 @@ export default function MapView({
         </Marker>
       )}
 
-      {properties.map((p) => {
-        const propertyLat = parseCoordinate(p.lat);
-        const propertyLng = parseCoordinate(p.lng);
+// @ts-ignore
+import MarkerClusterGroup from 'react-leaflet-cluster';
 
-        if (propertyLat === null || propertyLng === null) return null;
+      <MarkerClusterGroup chunkedLoading>
+        {properties.map((p) => {
+          const propertyLat = parseCoordinate(p.lat);
+          const propertyLng = parseCoordinate(p.lng);
 
-        return (
-          <Marker
-            key={p.id}
-            position={[propertyLat, propertyLng]}
-            icon={propertyIcon}
-            title={p.title}
-          >
-            <Popup>
-              <div>
-                <strong>{p.title}</strong>
-                <br />
-                <h1>{p.price}</h1>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
+          if (propertyLat === null || propertyLng === null) return null;
+
+          return (
+            <Marker
+              key={p.id}
+              position={[propertyLat, propertyLng]}
+              icon={propertyIcon}
+              title={p.title}
+            >
+              <Popup>
+                <div>
+                  <strong>{p.title}</strong>
+                  <br />
+                  <h1>{p.price}</h1>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 }

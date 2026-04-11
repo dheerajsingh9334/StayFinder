@@ -1,6 +1,7 @@
 import { Router } from "express";
 import AuthController from "./auth.controller";
 import { authMiddleware } from "../../middleware/auth.Middleware";
+import passport from "passport";
 
 const authRouter = Router();
 
@@ -19,5 +20,19 @@ authRouter.patch(
 );
 
 authRouter.patch("/password", authMiddleware, AuthController.changePassword);
-
+authRouter.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  }),
+);
+authRouter.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login",
+  }),
+  AuthController.googleCallback,
+);
 export default authRouter;

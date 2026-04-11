@@ -23,6 +23,9 @@ export const searchProperty = async (query: PropertySerachQuery) => {
     startDate,
     endDate,
     amenities,
+    bedrooms,
+    bathrooms,
+    sortBy,
   } = query;
 
   const filter: any = {
@@ -33,6 +36,8 @@ export const searchProperty = async (query: PropertySerachQuery) => {
   const capNum = toNumber(capacity);
   const minNum = toNumber(minPrice);
   const maxNum = toNumber(maxPrice);
+  const bedNum = toNumber(bedrooms);
+  const bathNum = toNumber(bathrooms);
 
   // 🔹 Location filters
   if (city) {
@@ -64,6 +69,14 @@ export const searchProperty = async (query: PropertySerachQuery) => {
   // 🔹 Capacity filter
   if (capNum !== undefined) {
     filter.capacity = { gte: capNum };
+  }
+
+  // 🔹 Rooms filter
+  if (bedNum !== undefined) {
+    filter.bedrooms = { gte: bedNum };
+  }
+  if (bathNum !== undefined) {
+    filter.bathrooms = { gte: bathNum };
   }
 
   // 🔹 Price filter
@@ -100,13 +113,20 @@ export const searchProperty = async (query: PropertySerachQuery) => {
   const limit = Math.min(50, Math.max(1, toNumber(query.limit) || 10));
   const skip = (page - 1) * limit;
 
+  // 🔹 Parsing Sort By
+  let orderByClause: any = { createdAt: "desc" };
+  if (sortBy === "price_asc") orderByClause = { price: "asc" };
+  else if (sortBy === "price_desc") orderByClause = { price: "desc" };
+  else if (sortBy === "rating") orderByClause = { averageRating: "desc" };
+  else if (sortBy === "newest") orderByClause = { createdAt: "desc" };
+
   // 🔹 Query DB
   const [properties, total] = await Promise.all([
     prisma.property.findMany({
       where: filter,
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: orderByClause,
       select: {
         id: true,
         title: true,

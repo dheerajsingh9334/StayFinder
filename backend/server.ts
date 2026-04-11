@@ -1,6 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
+import http from "http";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+const xss = require("xss-clean");
 
 dotenv.config({
   path: path.join(process.cwd(), ".env"),
@@ -16,17 +20,33 @@ import "./src/listener/payment.listeners";
 import "./src/listener/booking.listner";
 
 import { redisClient } from "./src/config/redis";
+import "./src/config/passport.service";
+import passport from "./src/config/passport.service";
+import { initSocket } from "./src/socket/index";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+const server = http.createServer(app);
+
+app.use(helmet());
+app.use(xss());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // limit each IP to 200 requests per windowMs
+  message: "Too many requests from this IP, please try again later"
+});
+app.use("/api", limiter);
 
 app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(passport.initialize());
 const frontendUrl = (
   process.env.CLIENT_URL || "https://stay-finder-blue.vercel.app"
 ).replace(/\/$/, "");
+
+initSocket(server, frontendUrl);
 
 app.use(
   cors({
@@ -68,7 +88,7 @@ async function start() {
 
     // console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET);
 
-    app.listen(PORT, () =>
+    server.listen(PORT, () =>
       console.log(`Worker ${process.pid} listening on port ${PORT}`),
     );
   } catch (error) {

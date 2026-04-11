@@ -3,9 +3,8 @@ dotenv.config();
 
 import { Worker } from "bullmq";
 import { bullmqConnection } from "../config/redis";
-import eventBus from "../event/event";
-import { PAYMENT_EVENTS } from "../event/payment.event";
-import { BOOKING_EVENTS } from "../event/booking.event";
+import prisma from "../utils/dbconnect";
+import { emailQueue } from "../queue/email.queue";
 
 console.log("💰 PAYMENT WORKER STARTED");
 
@@ -16,30 +15,59 @@ new Worker(
 
     switch (job.name) {
       case "payment-success": {
-        const { bookingId, userId, paymentId, amount } = job.data;
+        const { bookingId, paymentId, amount } = job.data;
 
-        eventBus.emit(PAYMENT_EVENTS.SUCCESS, {
-          bookingId,
-          userId,
-          paymentId,
-          amount,
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: { user: true, property: true },
         });
 
-        eventBus.emit(BOOKING_EVENTS.CONFIRMED, {
+        if (!booking) {
+          break;
+        }
+
+        await emailQueue.add("payment-success-email", {
+          email: booking.user.email,
+          booking,
+          amount,
+          paymentId,
+        });
+
+        await emailQueue.add("booking-confirmed-email", {
+          booking,
+        });
+
+        console.log("✅ Payment success flow queued", {
           bookingId,
-          userId,
+          paymentId,
         });
 
         break;
       }
 
       case "payment-failed": {
-        const { bookingId, userId, reason } = job.data;
+        const { bookingId, reason, paymentId } = job.data;
 
-        eventBus.emit(PAYMENT_EVENTS.FAILED, {
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: { user: true, property: true },
+        });
+
+        if (!booking) {
+          break;
+        }
+
+        await emailQueue.add("payment-failed-email", {
+          email: booking.user.email,
+          booking,
           bookingId,
-          userId,
           reason,
+          paymentId,
+        });
+
+        console.log("✅ Payment failed flow queued", {
+          bookingId,
+          paymentId,
         });
 
         break;

@@ -8,6 +8,23 @@ import {
 } from "./property.types";
 import prisma from "../../utils/dbconnect";
 import { redisClient } from "../../config/redis";
+import { z } from "zod";
+
+const createPropertySchema = z.object({
+  title: z.string().min(3),
+  description: z.string().min(10),
+  price: z.number().positive(),
+  country: z.string().optional(),
+  state: z.string(),
+  city: z.string(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  capacity: z.number().positive(),
+  bedrooms: z.number().positive(),
+  bathrooms: z.number().positive(),
+  images: z.array(z.string()).optional(),
+  amenities: z.array(z.string()).min(1),
+});
 
 export default class PropertyController {
   // ! CreateProperty
@@ -18,59 +35,15 @@ export default class PropertyController {
           msg: "Unauthorized",
         });
       }
+      const parsed = createPropertySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ msg: "Validation Error", errors: parsed.error.issues });
+      }
+
       const {
-        title,
-        description,
-        price,
-        country,
-        state,
-        city,
-        lat,
-        lng,
-        capacity,
-        bedrooms,
-        bathrooms,
-        images,
-        amenities,
-      } = req.body as CreatePropertyBody;
-
-      if (!title) {
-        return res.status(400).json({ msg: "Title is required" });
-      }
-
-      if (!description) {
-        return res.status(400).json({ msg: "Description is required" });
-      }
-
-      if (!price) {
-        return res.status(400).json({ msg: "Price is required" });
-      }
-
-      if (!state) {
-        return res.status(400).json({ msg: "State is required" });
-      }
-
-      if (!city) {
-        return res.status(400).json({ msg: "City is required" });
-      }
-
-      if (!capacity) {
-        return res.status(400).json({ msg: "Capacity is required" });
-      }
-
-      if (!bedrooms) {
-        return res.status(400).json({ msg: "Bedrooms is required" });
-      }
-
-      if (!bathrooms) {
-        return res.status(400).json({ msg: "Bathrooms is required" });
-      }
-
-      if (!amenities || amenities.length === 0) {
-        return res
-          .status(400)
-          .json({ msg: "At least one amenity is required" });
-      }
+        title, description, price, country, state, city,
+        lat, lng, capacity, bedrooms, bathrooms, images, amenities
+      } = parsed.data;
 
       const property = await prisma.property.create({
         data: {
@@ -613,7 +586,6 @@ export default class PropertyController {
             lte: maxLng,
           },
         },
-        take: limit,
         select: {
           id: true,
           title: true,
@@ -625,9 +597,27 @@ export default class PropertyController {
           state: true,
         },
       });
+
+      // Haversine formula
+      const R = 6371; // Earth's radius in km
+      const filteredProperties = properties.filter((p) => {
+        if (p.lat === null || p.lng === null) return false;
+        const dLat = ((p.lat - lat) * Math.PI) / 180;
+        const dLng = ((p.lng - lng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((lat * Math.PI) / 180) *
+            Math.cos((p.lat * Math.PI) / 180) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distance in km
+        return distance <= radius * 111; // if radius was in degrees originally; if radius was km, then just distance <= radius. Assuming radius was passed as degrees (0.1 ~ 11.1km). So distance <= radius * 111
+      }).slice(0, limit);
+
       const responseData = {
-        count: properties.length,
-        data: properties,
+        count: filteredProperties.length,
+        data: filteredProperties,
       };
       await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
       return res.status(200).json(responseData);

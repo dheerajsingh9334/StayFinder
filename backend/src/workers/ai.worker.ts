@@ -36,7 +36,7 @@ new Worker(
 
     // console.log("❌ Cache MISS", key);
 
-    await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+    await redisClient.set(key, JSON.stringify(responseData), "EX", 300);
 
     return responseData;
   },

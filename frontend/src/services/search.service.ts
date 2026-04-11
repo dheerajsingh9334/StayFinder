@@ -8,6 +8,7 @@ export type SearchFilters = {
   capacity?: number;
   bedrooms?: number;
   bathrooms?: number;
+  sortBy?: string;
 };
 
 export type SearchResult = {
@@ -196,6 +197,9 @@ export const searchService = {
     }
     if (options.limit !== undefined) {
       params.set("limit", String(options.limit));
+    }
+    if (filters.sortBy) {
+      params.set("sortBy", filters.sortBy);
     }
 
     // Backend currently does not support bedrooms/bathrooms in query schema.

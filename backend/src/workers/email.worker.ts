@@ -20,7 +20,38 @@ new Worker(
             <p>${booking.startDate}</p>
                     <a href="${url}">pay now</a>
           `,
-          replyTo: booking.property.email,
+          replyTo: booking.property.email || "support@stayfinder.com",
+        });
+        break;
+      }
+
+      case "host-new-booking-email": {
+        const { booking } = job.data;
+        await sendEmail({
+          to: booking.property.owner.email,
+          subject: "New Booking Request",
+          html: `
+            <h2>You have a new booking request</h2>
+            <p>Property: ${booking.property.title}</p>
+            <p>Guest: ${booking.user.name}</p>
+            <p>Dates: ${booking.startDate} to ${booking.endDate}</p>
+            <p>Action Required: Log in to your Host Dashboard to confirm or reject.</p>
+          `,
+        });
+        break;
+      }
+
+      case "checkin-reminder-email": {
+        const { booking } = job.data;
+        await sendEmail({
+          to: booking.user.email,
+          subject: "Your trip is coming up!",
+          html: `
+            <h2>Get Ready for Your Trip</h2>
+            <p>Your stay at ${booking.property.title} starts soon.</p>
+            <p>Check-in Date: ${booking.startDate}</p>
+            <p>Host: ${booking.property.owner.name}</p>
+          `,
         });
         break;
       }
@@ -44,6 +75,22 @@ new Worker(
           to: booking.user.email,
           subject: "Booking Completed",
           html: `<h2>Thanks for staying</h2>`,
+          replyTo: booking.property.email,
+        });
+        break;
+      }
+
+      case "booking-cancelled-email": {
+        const { booking } = job.data;
+
+        await sendEmail({
+          to: booking.user.email,
+          subject: "Booking Cancelled",
+          html: `
+            <h2>Your booking was cancelled</h2>
+            <p>Property: ${booking.property.title}</p>
+            <p>Status: ${booking.status}</p>
+          `,
           replyTo: booking.property.email,
         });
         break;

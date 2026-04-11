@@ -60,6 +60,7 @@ export default function SearchPage() {
     capacity: undefined,
     bedrooms: undefined,
     bathrooms: undefined,
+    sortBy: "newest",
   });
 
   const executeSearch = useCallback(
@@ -389,6 +390,22 @@ export default function SearchPage() {
                   }))
                 }
               />
+            </label>
+            <label>
+              <small>Sort By</small>
+              <select
+                className="form-input"
+                style={{ height: "40px" }}
+                value={filters.sortBy || "newest"}
+                onChange={(e) =>
+                  setFilters((p) => ({ ...p, sortBy: e.target.value }))
+                }
+              >
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="rating">Top Rated</option>
+              </select>
             </label>
           </div>
 

@@ -22,6 +22,10 @@ eventBus.on(BOOKING_EVENTS.CREATED, async ({ bookingId }) => {
       booking,
     });
 
+    await emailQueue.add("host-new-booking-email", {
+      booking,
+    });
+
     await bookingQueue.add(
       "auto-cancle",
       { bookingId },
@@ -56,7 +60,7 @@ eventBus.on(BOOKING_EVENTS.CONFIRMED, async ({ bookingId }) => {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        property: true,
+        property: { include: { owner: true } },
         user: true,
       },
     });
@@ -65,6 +69,9 @@ eventBus.on(BOOKING_EVENTS.CONFIRMED, async ({ bookingId }) => {
       return;
     }
     await emailQueue.add("booking-confirmed-email", { booking });
+
+    const reminderDelay = Math.max(0, new Date(booking.startDate).getTime() - Date.now() - 24 * 3600 * 1000);
+    await emailQueue.add("checkin-reminder-email", { booking }, { delay: reminderDelay, jobId: `reminder-${booking.id}` });
 
     console.log("Booking confirmation mail sent");
   } catch (error) {

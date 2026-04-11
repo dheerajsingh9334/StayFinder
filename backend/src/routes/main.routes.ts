@@ -7,6 +7,8 @@ import reviewRouter from "../modules/reviews/reviews.routes";
 import faviroteRouter from "../modules/favirote/favorite.routes";
 import searchRouter from "../modules/search/search.routes";
 import Paymentrouter from "../modules/payment/payment.routes";
+import adminRouter from "../modules/admin/admin.routes";
+import messageRouter from "../modules/message/message.routes";
 
 const router = Router();
 router.use("/auth", authRouter);
@@ -17,4 +19,6 @@ router.use("/reviews", reviewRouter);
 router.use("/favorite", faviroteRouter);
 router.use("/search", searchRouter);
 router.use("/payment", Paymentrouter);
+router.use("/admin", adminRouter);
+router.use("/message", messageRouter);
 export default router;

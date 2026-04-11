@@ -13,10 +13,14 @@ const queryClient = new QueryClient({
   },
 });
 
+import { ThemeProvider } from "../store/ThemeContext";
+
 export default function AppProvider({ children }: { children: ReactNode }) {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </Provider>
+    <ThemeProvider>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </Provider>
+    </ThemeProvider>
   );
 }

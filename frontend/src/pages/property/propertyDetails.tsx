@@ -28,6 +28,7 @@ import {
 import Button from "../../components/ui/Button";
 import Input, { Textarea } from "../../components/ui/Input";
 import Loader from "../../components/ui/Loader";
+import PropertyReviews from "../../components/property/PropertyReviews";
 
 const amenityIcons: Record<string, React.ReactNode> = {
   wifi: <Wifi size={18} />,
@@ -325,6 +326,9 @@ export default function PropertyDetails() {
                     )}
                   </div>
                 </div>
+
+                {/* Reviews */}
+                <PropertyReviews propertyId={current.id} />
               </>
             ) : (
               /* Edit Form */

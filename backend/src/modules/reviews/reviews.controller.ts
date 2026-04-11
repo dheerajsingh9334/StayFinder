@@ -132,7 +132,13 @@ export default class ReviewsControlller {
       if (cache) {
         return res.status(200).json(JSON.parse(cache));
       }
-      const [review, total] = await Promise.all([
+      const sortBy = req.query.sortBy as string;
+      
+      let orderByClause: any = { createdAt: "desc" };
+      if (sortBy === "highest") orderByClause = { rating: "desc" };
+      if (sortBy === "lowest") orderByClause = { rating: "asc" };
+      
+      const [review, total, breakdown] = await Promise.all([
         prisma.review.findMany({
           where: {
             propertyId,
@@ -140,9 +146,7 @@ export default class ReviewsControlller {
           },
           skip,
           take: limit,
-          orderBy: {
-            createdAt: "desc",
-          },
+          orderBy: orderByClause,
           select: {
             id: true,
             rating: true,
@@ -160,7 +164,19 @@ export default class ReviewsControlller {
         prisma.review.count({
           where: { propertyId, status: ReviewStatus.PUBLISHED },
         }),
+        prisma.review.groupBy({
+          by: ["rating"],
+          where: { propertyId, status: ReviewStatus.PUBLISHED },
+          _count: { rating: true },
+        }),
       ]);
+
+      const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      breakdown.forEach((item) => {
+        if (item.rating >= 1 && item.rating <= 5) {
+          ratingCounts[item.rating as 1 | 2 | 3 | 4 | 5] = item._count.rating;
+        }
+      });
 
       const responseData = {
         total,
@@ -168,6 +184,7 @@ export default class ReviewsControlller {
         limit,
         totalPage: Math.ceil(total / limit),
         reviews: review,
+        ratingBreakdown: ratingCounts,
         msg: "No reviews Yet",
       };
 

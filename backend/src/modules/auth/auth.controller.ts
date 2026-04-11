@@ -17,13 +17,13 @@ import { sendEMailOtp } from "./otp.services";
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET!;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 // !generateAccessToken
-const generateAccessToken = (userId: string, role: Role) => {
+export const generateAccessToken = (userId: string, role: Role) => {
   return jwt.sign({ userId, role }, ACCESS_TOKEN_SECRET, {
     expiresIn: "15m",
   });
 };
 // !generateRefreshToken
-const generateRefreshToken = (userId: string, role: Role) => {
+export const generateRefreshToken = (userId: string, role: Role) => {
   return jwt.sign(
     {
       userId,
@@ -457,5 +457,23 @@ export default class AuthController {
         error: error,
       });
     }
+  };
+  static googleCallback = (req: Request, res: Response) => {
+    const { accessToken, refreshToken } = req.user as any;
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return res.redirect(
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173"
+        : "https://stay-finder-blue.vercel.app",
+    );
   };
 }
