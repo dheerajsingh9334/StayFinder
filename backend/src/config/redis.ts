@@ -19,10 +19,20 @@ const retryStrategy = (times: number) => {
   return Math.min(times * 200, 5000);
 };
 
+// Diagnostic log for production deployment
+try {
+  const maskedUrl = redisUrl.replace(/\/\/.*@/, "//***:***@");
+  console.log(`[Redis] Attempting to connect to: ${maskedUrl}`);
+} catch (e) {
+  console.log("[Redis] Attempting to connect to specialized URL...");
+}
+
 const commonOptions: any = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy,
+  family: 4, 
+  connectTimeout: 20000, // Even longer timeout
   reconnectOnError: (err: any) => {
     const targetError = "READONLY";
     if (err.message.slice(0, targetError.length) === targetError) {
