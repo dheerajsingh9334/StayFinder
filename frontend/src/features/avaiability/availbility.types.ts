@@ -24,6 +24,15 @@ export type DayInfo = {
   status: string;
   remainingCapacity: number;
 };
+
+export type PropertyBlock = {
+  id: string;
+  propertyId: string;
+  startTime: string;
+  endTime: string;
+  isBlocked: boolean;
+  createdAt: string;
+};
 export type CalendarViewProps = {
   propertyId: string;
 };

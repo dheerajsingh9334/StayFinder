@@ -13,3 +13,18 @@ export const getCalendarViewApi = async (
   );
   return res.data;
 };
+
+export const blockAvailabilityApi = async (data: { propertyId: string, startTime: string, endTime: string }) => {
+  const res = await availabilityService.blockTime(data);
+  return res.data;
+};
+
+export const unblockAvailabilityApi = async (blockId: string) => {
+  const res = await availabilityService.unblockTime(blockId);
+  return res.data;
+};
+
+export const getHostBlocksApi = async (propertyId: string) => {
+  const res = await availabilityService.getHostBlocks(propertyId);
+  return res.data;
+};

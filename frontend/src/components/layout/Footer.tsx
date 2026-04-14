@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import {
   Home,
   Facebook,
@@ -7,81 +7,30 @@ import {
   Mail,
   Phone,
   MapPin,
-} from "lucide-react";
+} from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer
-      style={{
-        background: "var(--bg-primary)",
-        borderTop: "1px solid var(--gray-100)",
-        color: "var(--gray-500)",
-        marginTop: "auto",
-        position: "relative",
-        zIndex: 10,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
-          padding: "var(--space-12) var(--space-6)",
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--space-8)",
-          }}
-        >
-          {/* Brand Section */}
+    <footer className="site-footer">
+      <div className="site-footer-container">
+        <div className="site-footer-grid">
           <div>
-            <Link
-              to="/"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-2)",
-                color: "var(--primary-700)",
-                fontSize: "var(--text-xl)",
-                fontWeight: "var(--font-bold)",
-                marginBottom: "var(--space-4)",
-              }}
-            >
+            <Link to="/" className="site-footer-brand">
               <Home size={28} />
               <span>StayFinder</span>
             </Link>
-            <p
-              style={{
-                fontSize: "var(--text-sm)",
-                lineHeight: "var(--leading-relaxed)",
-                marginBottom: "var(--space-4)",
-                color: "var(--gray-500)",
-              }}
-            >
+            <p className="site-footer-copy">
               Experience the world's most luxurious properties. Masterfully
               curated, exceptionally designed just for you.
             </p>
-            <div style={{ display: "flex", gap: "var(--space-3)" }}>
+            <div className="site-footer-socials">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  background: "var(--bg-secondary)",
-                  border: "1px solid var(--gray-200)",
-                  borderRadius: "var(--radius-lg)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--primary-700)",
-                  transition: "all var(--transition-fast)",
-                }}
+                className="site-footer-social"
               >
                 <Facebook size={18} />
               </a>
@@ -89,18 +38,7 @@ export default function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  background: "var(--bg-secondary)",
-                  border: "1px solid var(--gray-200)",
-                  borderRadius: "var(--radius-lg)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--primary-700)",
-                  transition: "all var(--transition-fast)",
-                }}
+                className="site-footer-social"
               >
                 <Twitter size={18} />
               </a>
@@ -108,267 +46,96 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  background: "var(--bg-secondary)",
-                  border: "1px solid var(--gray-200)",
-                  borderRadius: "var(--radius-lg)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--primary-700)",
-                  transition: "all var(--transition-fast)",
-                }}
+                className="site-footer-social"
               >
                 <Instagram size={18} />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4
-              style={{
-                color: "var(--gray-600)",
-                fontSize: "var(--text-base)",
-                fontWeight: "var(--font-semibold)",
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              Explore
-            </h4>
-            <ul
-              style={{
-                listStyle: "none",
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--space-2)",
-              }}
-            >
+            <h4 className="site-footer-heading">Explore</h4>
+            <ul className="site-footer-list">
               <li>
-                <Link
-                  to="/"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/" className="site-footer-link">
                   All Properties
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/nearby"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/nearby" className="site-footer-link">
                   Nearby Locations
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/search"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/search" className="site-footer-link">
                   Smart Semantic Search
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/reviews"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/reviews" className="site-footer-link">
                   Authentic Reviews
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Host */}
           <div>
-            <h4
-              style={{
-                color: "var(--gray-600)",
-                fontSize: "var(--text-base)",
-                fontWeight: "var(--font-semibold)",
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              Hosting
-            </h4>
-            <ul
-              style={{
-                listStyle: "none",
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--space-2)",
-              }}
-            >
+            <h4 className="site-footer-heading">Hosting</h4>
+            <ul className="site-footer-list">
               <li>
-                <Link
-                  to="/CreateProperty"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/CreateProperty" className="site-footer-link">
                   List Your Property
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/host-dashboard"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/host-dashboard" className="site-footer-link">
                   Host Command Center
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/host-panel"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/host-panel" className="site-footer-link">
                   Resources & Panels
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/mybooking"
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
+                <Link to="/mybooking" className="site-footer-link">
                   Manage Reservations
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h4
-              style={{
-                color: "var(--gray-600)",
-                fontSize: "var(--text-base)",
-                fontWeight: "var(--font-semibold)",
-                marginBottom: "var(--space-4)",
-              }}
-            >
-              Contact
-            </h4>
-            <ul
-              style={{
-                listStyle: "none",
-                display: "flex",
-                flexDirection: "column",
-                gap: "var(--space-3)",
-              }}
-            >
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-2)",
-                  color: "var(--gray-500)",
-                  fontSize: "var(--text-sm)",
-                }}
-              >
-                <Mail size={16} color="var(--primary-700)" />
+            <h4 className="site-footer-heading">Contact</h4>
+            <ul className="site-footer-contact-list">
+              <li className="site-footer-contact-item">
+                <Mail size={16} />
                 <span>concierge@stayfinder.luxury</span>
               </li>
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-2)",
-                  color: "var(--gray-500)",
-                  fontSize: "var(--text-sm)",
-                }}
-              >
-                <Phone size={16} color="var(--primary-700)" />
+              <li className="site-footer-contact-item">
+                <Phone size={16} />
                 <span>+1 800 LUX-STAY</span>
               </li>
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "var(--space-2)",
-                  color: "var(--gray-500)",
-                  fontSize: "var(--text-sm)",
-                }}
-              >
-                <MapPin
-                  size={16}
-                  color="var(--primary-700)"
-                  style={{ flexShrink: 0, marginTop: "2px" }}
-                />
+              <li className="site-footer-contact-item site-footer-contact-item-top">
+                <MapPin size={16} />
                 <span>100 Premium Blvd, New York, US</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div
-          style={{
-            borderTop: "1px solid var(--gray-100)",
-            marginTop: "var(--space-8)",
-            paddingTop: "var(--space-6)",
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "var(--space-4)",
-          }}
-        >
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}>
+        <div className="site-footer-bottom">
+          <p className="site-footer-copyright">
             © {currentYear} StayFinder Ultra-Premium. All rights reserved.
           </p>
-          <div style={{ display: "flex", gap: "var(--space-6)" }}>
-            <Link
-              to="/privacy"
-              style={{
-                fontSize: "var(--text-sm)",
-                color: "var(--gray-500)",
-                textDecoration: "none",
-              }}
-            >
+          <div className="site-footer-legal">
+            <Link to="/privacy" className="site-footer-link">
               Privacy Policy
             </Link>
-            <Link
-              to="/terms"
-              style={{
-                fontSize: "var(--text-sm)",
-                color: "var(--gray-500)",
-                textDecoration: "none",
-              }}
-            >
+            <Link to="/terms" className="site-footer-link">
               Terms of Service
             </Link>
-            <Link
-              to="/cookies"
-              style={{
-                fontSize: "var(--text-sm)",
-                color: "var(--gray-500)",
-                textDecoration: "none",
-              }}
-            >
+            <Link to="/cookies" className="site-footer-link">
               Cookie Policy
             </Link>
           </div>

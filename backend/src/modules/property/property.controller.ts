@@ -82,55 +82,52 @@ export default class PropertyController {
   static getProperty = async (req: Request, res: Response) => {
     try {
       const page = Math.max(1, Number(req.query.page) || 1);
-      const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
       const skip = (page - 1) * limit;
+      const search = ((req.query.search as string) || '').trim();
+
+      const where: Record<string, unknown> = { status: PropertyStatus.ACTIVE };
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { city:  { contains: search, mode: 'insensitive' } },
+          { state: { contains: search, mode: 'insensitive' } },
+        ];
+      }
 
       const version = (await redisClient.get("property:version")) || "1";
-      const key = `property:v${version}:list:${page}:${limit}`;
-      const cache = await redisClient.get(key);
-      if (cache) {
-        console.log(" get All cache hit");
-        return res.status(200).json(JSON.parse(cache));
+      const cacheKey = search ? null : `property:v${version}:list:${page}:${limit}`;
+      if (cacheKey) {
+        const cache = await redisClient.get(cacheKey);
+        if (cache) {
+          console.log(" get All cache hit");
+          return res.status(200).json(JSON.parse(cache));
+        }
+        console.log(" get All cache miss - db hit");
       }
-      console.log(" get All cache miss - db hit");
 
       const [property, total] = await Promise.all([
         prisma.property.findMany({
-          where: { status: PropertyStatus.ACTIVE },
+          where,
           skip,
           take: limit,
-          orderBy: {
-            createdAt: "desc",
-          },
+          orderBy: { createdAt: "desc" },
           select: {
             id: true,
             title: true,
             state: true,
+            city: true,
             price: true,
             images: true,
-
-            // owner: {
-            //   select: {
-            //     name: true,
-            //     avatarUrl: true,
-            //   },
-            // },
+            lat: true,
+            lng: true,
           },
         }),
-        prisma.property.count({ where: { status: PropertyStatus.ACTIVE } }),
+        prisma.property.count({ where }),
       ]);
-      const formate = property.map((p) => ({
-        ...p,
-        images: p.images?.slice(0, 1),
-      }));
-      const responseData = {
-        page,
-        limit,
-        total,
-        totalPage: Math.ceil(total / limit),
-        data: formate,
-      };
-      await redisClient.set(key, JSON.stringify(responseData), "EX", 60);
+      const formate = property.map((p) => ({ ...p, images: p.images?.slice(0, 1) }));
+      const responseData = { page, limit, total, totalPage: Math.ceil(total / limit), data: formate };
+      if (cacheKey) await redisClient.set(cacheKey, JSON.stringify(responseData), "EX", 60);
       return res.status(200).json(responseData);
     } catch (error) {
       return res.status(400).json({
@@ -142,9 +139,9 @@ export default class PropertyController {
   static getSingleProperty = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
-      if (!id) {
+      if (!id || id === "user-location") {
         return res.status(404).json({
-          msg: "Id is missing",
+          msg: "Property not found",
         });
       }
       const version = (await redisClient.get("property:version")) || "1";
@@ -367,7 +364,7 @@ export default class PropertyController {
                 PropertyStatus.ACTIVE,
                 PropertyStatus.INACTIVE,
                 PropertyStatus.PENDING,
-                // PropertyStatus.DELETED,
+                PropertyStatus.DELETED,
                 PropertyStatus.REJECTED,
               ],
             },
@@ -406,6 +403,7 @@ export default class PropertyController {
                 PropertyStatus.INACTIVE,
                 PropertyStatus.PENDING,
                 PropertyStatus.REJECTED,
+                PropertyStatus.DELETED,
               ],
             },
           },
@@ -420,6 +418,7 @@ export default class PropertyController {
                 PropertyStatus.INACTIVE,
                 PropertyStatus.PENDING,
                 PropertyStatus.REJECTED,
+                PropertyStatus.DELETED,
               ],
             },
           },
@@ -434,6 +433,7 @@ export default class PropertyController {
         inactive: 0,
         pending: 0,
         rejected: 0,
+        deleted: 0,
       };
 
       for (const item of groupedCounts) {
@@ -444,6 +444,7 @@ export default class PropertyController {
         if (item.status === PropertyStatus.INACTIVE) counts.inactive = value;
         if (item.status === PropertyStatus.PENDING) counts.pending = value;
         if (item.status === PropertyStatus.REJECTED) counts.rejected = value;
+        if (item.status === PropertyStatus.DELETED) counts.deleted = value;
       }
 
       // if (!properties) {

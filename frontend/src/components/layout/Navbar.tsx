@@ -1,21 +1,20 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState, AppDispatch } from "../../store";
-import { logout } from "../../features/auth/auth.slice";
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState, AppDispatch } from '../../store';
+import { logout } from '../../features/auth/auth.slice';
 import {
-  Home,
   Search,
-  User,
   LogOut,
-  PlusCircle,
-  Building2,
-  Calendar,
-  Menu,
-  X,
   Heart,
-  Bell,
-} from "lucide-react";
+  MessageSquare,
+  User,
+  X,
+  Menu,
+  MessageCircle,
+} from 'lucide-react';
+import { FeyButton } from '../ui/fey-button';
+import { useFavorites } from '../../features/favorites/favorites.hooks';
 
 export default function Navbar() {
   const { user, isAuthenticated } = useSelector(
@@ -24,317 +23,270 @@ export default function Navbar() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileRef = useRef<HTMLDivElement>(null);
+  const { data: favorites } = useFavorites();
+  const wishCount = favorites?.size || 0;
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) {
+        setMobileOpen(false);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (search.trim()) navigate(`/?q=${encodeURIComponent(search)}`);
+    },
+    [search, navigate],
+  );
 
   const handleLogout = () => {
     dispatch(logout());
-    setIsDropdownOpen(false);
-    navigate("/");
+    navigate('/');
   };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-  };
-
-  const isActive = (path: string) => location.pathname === path;
-
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const isLandingPage = location.pathname === "/";
 
   return (
-    <nav className={`navbar ${isLandingPage ? "navbar-overlay" : ""}`}>
-      <div className="navbar-container">
+    <nav className="gn-navbar">
+      <div className="gn-container">
         {/* Logo */}
-        <Link to="/" className="navbar-logo">
-          <Home size={28} />
-          <span className="navbar-logo-block">
-            <strong>StayFinder</strong>
-            <small>Book smart, stay better.</small>
-          </span>
-        </Link>
+        <button className="gn-logo-btn" onClick={() => navigate('/')}>
+          <span className="gn-logo-text">StayFinder</span>
+        </button>
 
-        {/* Search Bar - Desktop */}
-        <form
-          className="search-bar navbar-search"
-          onSubmit={handleSearchSubmit}
-        >
-          <Search size={18} className="search-bar-icon" />
+        {/* Search box */}
+        <form className="gn-search" onSubmit={handleSearch}>
+          <Search size={13} className="gn-search-icon" />
           <input
-            type="text"
-            placeholder="Search destinations, properties..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            className="gn-search-input"
+            placeholder="Search properties…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              type="button"
+              className="gn-search-clear"
+              onClick={() => setSearch('')}
+            >
+              <X size={12} />
+            </button>
+          )}
         </form>
 
-        {/* Navigation Links - Desktop */}
-        <div className="navbar-nav">
-          <Link
-            to="/"
-            className={`navbar-link ${isActive("/") ? "active" : ""}`}
+        {/* Nav actions — FeyButton style, desktop */}
+        <div className="gn-links">
+          <FeyButton
+            className="min-w-0 px-6 h-12 text-base"
+            onClick={() => navigate('/properties')}
           >
             Explore
-          </Link>
-          <Link
-            to="/search"
-            className={`navbar-link ${isActive("/search") ? "active" : ""}`}
-          >
-            Search
-          </Link>
-          {user?.role === "HOST" && (
+          </FeyButton>
+
+          {isAuthenticated && user ? (
             <>
-              <Link
-                to="/host-panel"
-                className={`navbar-link ${isActive("/host-panel") ? "active" : ""}`}
+              {user.role === 'HOST' && (
+                <>
+                  <FeyButton
+                    className="min-w-0 px-6 h-12 text-base"
+                    onClick={() => navigate('/host-panel')}
+                  >
+                    Host Panel
+                  </FeyButton>
+                  <FeyButton
+                    className="min-w-0 px-6 h-12 text-base"
+                    onClick={() => navigate('/Myproperty')}
+                  >
+                    My Properties
+                  </FeyButton>
+                </>
+              )}
+              {user.role === 'ADMIN' && (
+                <FeyButton
+                  className="min-w-0 px-6 h-12 text-base"
+                  onClick={() => navigate('/admin-dashboard')}
+                >
+                  Admin
+                </FeyButton>
+              )}
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base"
+                onClick={() => navigate('/reviews')}
               >
-                Host Panel
-              </Link>
-              <Link
-                to="/Myproperty"
-                className={`navbar-link ${isActive("/Myproperty") ? "active" : ""}`}
+                <MessageSquare size={17} className="mr-2" />
+                Reviews
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base"
+                onClick={() => navigate('/favorites')}
               >
-                My Properties
-              </Link>
-              <Link
-                to="/CreateProperty"
-                className={`navbar-link ${isActive("/CreateProperty") ? "active" : ""}`}
+                <div className="gn-badge-wrapper">
+                  <Heart size={17} className="mr-2" />
+                  {wishCount > 0 && (
+                    <span className="gn-badge">{wishCount}</span>
+                  )}
+                </div>
+                Wishlist
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base"
+                onClick={() => navigate('/messages')}
               >
-                <PlusCircle size={16} style={{ marginRight: "4px" }} />
-                List Property
-              </Link>
+                <MessageCircle size={17} className="mr-2" />
+                Messages
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base"
+                onClick={() => navigate('/profile')}
+              >
+                <User size={17} className="mr-2" />
+                Profile
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base !bg-red-500/10 text-red-400 hover:after:bg-red-500/20"
+                onClick={handleLogout}
+              >
+                <LogOut size={17} className="mr-2" />
+                Logout
+              </FeyButton>
+            </>
+          ) : (
+            <>
+              <FeyButton
+                className="min-w-0 px-8 h-12 text-base"
+                onClick={() => navigate('/login')}
+              >
+                Log in
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-8 h-12 text-base"
+                onClick={() => navigate('/register')}
+              >
+                Sign up
+              </FeyButton>
+              <FeyButton
+                className="min-w-0 px-6 h-12 text-base"
+                onClick={() =>
+                  (window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/auth/google`)
+                }
+              >
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  style={{ width: 18, height: 18 }}
+                  className="mr-3"
+                />
+                Google
+              </FeyButton>
             </>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="navbar-actions">
-          {isAuthenticated && user ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--space-2)",
-              }}
-            >
-              <Link
-                to="/favorites"
-                className="btn btn-icon btn-ghost"
-                title="Favorites"
-              >
-                <Heart size={20} />
-              </Link>
-              <Link
-                to="/notifications"
-                className="btn btn-icon btn-ghost"
-                title="Notifications"
-              >
-                <Bell size={20} />
-              </Link>
-
-              <div
-                className={`dropdown ${isDropdownOpen ? "open" : ""}`}
-                ref={dropdownRef}
-                style={{ marginLeft: "var(--space-2)" }}
-              >
-                <div
-                  className="navbar-avatar"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} />
-                  ) : (
-                    getInitials(user.name)
-                  )}
-                </div>
-
-                <div className="dropdown-menu">
-                  <div
-                    style={{
-                      padding: "var(--space-3) var(--space-4)",
-                      borderBottom: "1px solid var(--gray-100)",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontWeight: "var(--font-semibold)",
-                        color: "var(--gray-50)",
-                        marginBottom: "2px",
-                      }}
-                    >
-                      {user.name}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "var(--text-xs)",
-                        color: "var(--gray-500)",
-                      }}
-                    >
-                      {user.email}
-                    </p>
-                  </div>
-
-                  <Link
-                    to="/profile"
-                    className="dropdown-item"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <User size={16} />
-                    Profile
-                  </Link>
-
-                  <Link
-                    to="/mybooking"
-                    className="dropdown-item"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <Calendar size={16} />
-                    My Bookings
-                  </Link>
-
-                  {user.role === "HOST" && (
-                    <>
-                      <Link
-                        to="/host-panel"
-                        className="dropdown-item"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <Building2 size={16} />
-                        Host Panel
-                      </Link>
-                      <Link
-                        to="/Myproperty"
-                        className="dropdown-item"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <Building2 size={16} />
-                        My Properties
-                      </Link>
-                    </>
-                  )}
-
-                  <div className="dropdown-divider" />
-
-                  <button
-                    className="dropdown-item danger"
-                    onClick={handleLogout}
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      background: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="navbar-auth-actions">
-              <Link to="/login" className="btn btn-ghost">
-                Log in
-              </Link>
-              <Link to="/register" className="btn btn-primary">
-                Sign up
-              </Link>
-            </div>
-          )}
-
-          {/* Mobile Menu Toggle */}
-          <button
-            className="btn btn-icon btn-ghost"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            style={{ display: "none" }}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        {/* Hamburger — mobile only */}
+        <button
+          ref={mobileRef as any}
+          className="gn-hamburger"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            background: "rgba(17, 13, 10, 0.8)",
-            borderTop: "1px solid rgba(213, 137, 27, 0.24)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            boxShadow: "0 16px 40px rgba(0, 0, 0, 0.35)",
-            padding: "var(--space-4)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--space-2)",
-          }}
-        >
-          <Link
-            to="/"
-            className="navbar-link"
-            onClick={() => setIsMobileMenuOpen(false)}
+      {/* Mobile dropdown */}
+      {mobileOpen && (
+        <div className="gn-mobile-menu">
+          <button
+            className="gn-mobile-link"
+            onClick={() => navigate('/properties')}
           >
             Explore
-          </Link>
-          <Link
-            to="/search"
-            className="navbar-link"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Search
-          </Link>
-          {user?.role === "HOST" && (
+          </button>
+          {isAuthenticated && user ? (
             <>
-              <Link
-                to="/host-panel"
-                className="navbar-link"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/profile')}
               >
-                Host Panel
-              </Link>
-              <Link
-                to="/Myproperty"
-                className="navbar-link"
-                onClick={() => setIsMobileMenuOpen(false)}
+                Profile
+              </button>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/mybooking')}
               >
-                My Properties
-              </Link>
-              <Link
-                to="/CreateProperty"
-                className="navbar-link"
-                onClick={() => setIsMobileMenuOpen(false)}
+                My Bookings
+              </button>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/messages')}
               >
-                List Property
-              </Link>
+                Messages
+              </button>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/favorites')}
+              >
+                Wishlist
+              </button>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/reviews')}
+              >
+                Reviews
+              </button>
+              {user.role === 'HOST' && (
+                <>
+                  <button
+                    className="gn-mobile-link"
+                    onClick={() => navigate('/host-panel')}
+                  >
+                    Host Panel
+                  </button>
+                  <button
+                    className="gn-mobile-link"
+                    onClick={() => navigate('/Myproperty')}
+                  >
+                    My Properties
+                  </button>
+                </>
+              )}
+              {user.role === 'ADMIN' && (
+                <button
+                  className="gn-mobile-link"
+                  onClick={() => navigate('/admin-dashboard')}
+                >
+                  Admin
+                </button>
+              )}
+              <button className="gn-mobile-link danger" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/login')}
+              >
+                Log in
+              </button>
+              <button
+                className="gn-mobile-link"
+                onClick={() => navigate('/register')}
+              >
+                Sign up
+              </button>
             </>
           )}
         </div>

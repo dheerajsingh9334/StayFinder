@@ -11,8 +11,8 @@ export const propertyServices = {
   create: (data: CreatePropertyPayload) =>
     api.post<PropertyPayload>("/property/create", data),
 
-  getAll: (page: number) =>
-    api.get<PropertyListResponse>(`/property?page=${page}`),
+  getAll: (page: number, limit = 20, search = '') =>
+    api.get<PropertyListResponse>(`/property?page=${page}&limit=${limit}${search ? `&search=${encodeURIComponent(search)}` : ''}`),
 
   getSingle: (id: string) =>
     api.get<{ property: PropertyPayload }>(`/property/${id}`),
@@ -27,4 +27,7 @@ export const propertyServices = {
     api.get<NearbyPropertyResponse>(
       `/property/nearby?lat=${lat}&lng=${lng}&radius=${radius}&limit=${limit}`,
     ),
+
+  delete: (id: string) =>
+    api.patch<{ property: PropertyPayload }>(`/property/delete/${id}`),
 };

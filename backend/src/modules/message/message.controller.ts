@@ -59,7 +59,28 @@ export default class MessageController {
         }
       });
 
-      return res.status(200).json({ conversations: Array.from(conversationsMap.values()) });
+      const conversations = Array.from(conversationsMap.values());
+
+      // Attempt to find a related property based on bookings between the two users
+      for (const conv of conversations) {
+        const otherUser = conv.user;
+        const booking = await prisma.booking.findFirst({
+          where: {
+             OR: [
+               { userId: userId, property: { ownerId: otherUser.id } },
+               { userId: otherUser.id, property: { ownerId: userId } }
+             ]
+          },
+          include: { property: { select: { id: true, title: true, images: true } } },
+          orderBy: { createdAt: "desc" }
+        });
+
+        if (booking) {
+          conv.property = booking.property;
+        }
+      }
+
+      return res.status(200).json({ conversations });
     } catch (error) {
        console.error("Message getConversations error", error);
        return res.status(500).json({ msg: "Server Error" });

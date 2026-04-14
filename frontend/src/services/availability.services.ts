@@ -17,4 +17,10 @@ export const availabilityService = {
     api.get<bookingAvailabilityResponse>(
       `availability/${propertyId}/availability?startDate=${startDate}&endDate=${endDate}`,
     ),
+  blockTime: (data: { propertyId: string, startTime: string, endTime: string }) => 
+    api.post("availability/block", data),
+  unblockTime: (blockId: string) => 
+    api.delete(`availability/unblock/${blockId}`),
+  getHostBlocks: (propertyId: string) => 
+    api.get<{ blocks: any[] }>(`availability/${propertyId}`)
 };

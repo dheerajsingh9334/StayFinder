@@ -3,8 +3,9 @@ dotenv.config();
 import { Worker } from "bullmq";
 import { bullmqConnection } from "../config/redis";
 import { sendEmail } from "../services/email.service";
-console.log("email worker start");
-new Worker(
+console.log("✉️  Email worker started — EMAIL_USER:", process.env.EMAIL_USER ? "✅ set" : "❌ MISSING");
+
+const worker = new Worker(
   "emailQueue",
   async (job) => {
     switch (job.name) {
@@ -139,9 +140,40 @@ new Worker(
         });
         break;
       }
+      case "new-message-email": {
+        const { receiverEmail, receiverName, senderName, preview } = job.data;
+        await sendEmail({
+          to: receiverEmail,
+          subject: `💬 New message from ${senderName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+              <h2 style="color:#1e293b">You have a new message</h2>
+              <p>Hi ${receiverName},</p>
+              <p><strong>${senderName}</strong> sent you a message on StayFinder:</p>
+              <blockquote style="border-left:3px solid #6366f1;padding:12px 16px;background:#f1f5f9;border-radius:4px;margin:16px 0">
+                ${preview}${preview.length === 120 ? '...' : ''}
+              </blockquote>
+              <a href="https://stay-finder-blue.vercel.app/messages" 
+                 style="display:inline-block;background:#6366f1;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+                Reply on StayFinder
+              </a>
+              <p style="color:#94a3b8;font-size:12px;margin-top:24px">You received this because someone messaged you on StayFinder. To stop receiving these, update your notification preferences.</p>
+            </div>
+          `,
+        });
+        break;
+      }
     }
   },
   {
     connection: bullmqConnection,
   },
 );
+
+worker.on("completed", (job) => {
+  console.log(`✅ Email job completed: ${job.name} (${job.id})`);
+});
+
+worker.on("failed", (job, err) => {
+  console.error(`❌ Email job failed: ${job?.name} (${job?.id}) →`, err.message);
+});

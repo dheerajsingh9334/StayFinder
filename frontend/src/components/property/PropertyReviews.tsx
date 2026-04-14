@@ -1,44 +1,55 @@
-import { useEffect, useState } from "react";
-import { Star, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { Star, MessageSquare, EyeOff } from "lucide-react";
 import { api } from "../../services/api";
 import Loader from "../ui/Loader";
+import toast from "react-hot-toast";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Review {
   id: string;
   rating: number;
   comment: string;
   createdAt: string;
+  status?: string;
   user: {
     name: string;
     avatarUrl?: string;
   };
 }
 
-export default function PropertyReviews({ propertyId }: { propertyId: string }) {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [breakdown, setBreakdown] = useState<Record<number, number>>({});
-  const [loading, setLoading] = useState(true);
+export default function PropertyReviews({ propertyId, isOwner }: { propertyId: string; isOwner?: boolean }) {
   const [sortBy, setSortBy] = useState("newest");
   const [page] = useState(1);
-  const [total, setTotal] = useState(0);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchReviews();
-  }, [propertyId, sortBy, page]);
-
-  const fetchReviews = async () => {
-    try {
-      setLoading(true);
+  const { data, isLoading: loading, error } = useQuery({
+    queryKey: ['reviews', propertyId, sortBy, page],
+    queryFn: async () => {
       const { data } = await api.get(`/reviews/property/${propertyId}?sortBy=${sortBy}&page=${page}&limit=50`);
-      setReviews(data.reviews || []);
-      setBreakdown(data.ratingBreakdown || {});
-      setTotal(data.total || 0);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
+      return data;
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async (reviewId: string) => {
+      await api.patch(`/reviews/toggle/${reviewId}`);
+    },
+    onSuccess: () => {
+      toast.success("Review visibility updated");
+      queryClient.invalidateQueries({ queryKey: ['reviews', propertyId] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.msg || "Failed to update review visibility");
     }
+  });
+
+  const toggleReviewStatus = (reviewId: string) => {
+    toggleMutation.mutate(reviewId);
   };
+
+  const reviews: Review[] = data?.reviews || [];
+  const breakdown: Record<number, number> = data?.ratingBreakdown || {};
+  const total = data?.total || 0;
 
   if (loading) return <Loader size="md" text="Loading reviews..." />;
   if (total === 0) return <div className="empty-state"><MessageSquare /><h3>No reviews yet</h3><p>Be the first to review this property.</p></div>;
@@ -95,6 +106,27 @@ export default function PropertyReviews({ propertyId }: { propertyId: string }) 
                   <span style={{ fontSize: "var(--text-xs)", color: "var(--gray-400)" }}>{new Date(review.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
+              {isOwner && (
+                <button
+                  onClick={() => toggleReviewStatus(review.id)}
+                  style={{
+                    marginLeft: "auto",
+                    background: "transparent",
+                    border: "1px solid var(--border-light)",
+                    borderRadius: "8px",
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    fontSize: "0.75rem",
+                    color: "var(--text-secondary)",
+                  }}
+                  title="Hide Review from public"
+                >
+                  <EyeOff size={14} /> Hide
+                </button>
+              )}
             </div>
             <p style={{ margin: 0, fontSize: "var(--text-sm)", color: "var(--gray-700)" }}>{review.comment}</p>
           </div>

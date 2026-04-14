@@ -457,19 +457,24 @@ export default class ReviewsControlller {
 
       const { reviewId } = req.params;
 
-      if (req.user.role !== Role.ADMIN) {
-        return res.status(401).json({
-          msg: "Unauthorized only admin have access",
-        });
-      }
-
       const review = await prisma.review.findUnique({
         where: { id: reviewId },
+        include: { property: true },
       });
 
       if (!review) {
         return res.status(400).json({
           msg: "Review is not exists",
+        });
+      }
+
+      const isAdmin = req.user.role === Role.ADMIN;
+      const isHost = req.user.role === Role.HOST;
+      const isOwner = review.property?.ownerId === req.user.userId;
+
+      if (!isAdmin && !(isHost && isOwner)) {
+        return res.status(401).json({
+          msg: "Unauthorized. Only admins or the property host can access this.",
         });
       }
 

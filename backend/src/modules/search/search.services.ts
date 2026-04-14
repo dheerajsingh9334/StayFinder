@@ -88,9 +88,13 @@ export const searchProperty = async (query: PropertySerachQuery) => {
 
   // 🔹 Keyword search (title / description / address)
   if (search && search.trim()) {
+    const s = search.trim();
     filter.OR = [
-      { title: { contains: search } },
-      { description: { contains: search } },
+      { title: { contains: s, mode: "insensitive" } },
+      { description: { contains: s, mode: "insensitive" } },
+      { city: { contains: s, mode: "insensitive" } },
+      { state: { contains: s, mode: "insensitive" } },
+      { address: { contains: s, mode: "insensitive" } },
     ];
   }
 

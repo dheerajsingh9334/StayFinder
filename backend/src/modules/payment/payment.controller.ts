@@ -123,4 +123,24 @@ export default class PaymentController {
       }
     }
   };
+  static getMyPayments = async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.user) return res.status(401).json({ msg: "Unauthorized" });
+      const payments = await prisma.payment.findMany({
+        where: { userId: req.user.userId },
+        orderBy: { createdAt: "desc" },
+        include: {
+          booking: {
+            include: {
+              property: { select: { id: true, title: true, city: true, images: true } }
+            }
+          }
+        }
+      });
+      return res.status(200).json({ payments });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Server Error" });
+    }
+  };
 }

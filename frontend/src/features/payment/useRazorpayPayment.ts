@@ -81,6 +81,7 @@ export const useRazorpayPayment = (refetchBooking?: () => Promise<any>) => {
                 toast(
                   "Payment is being processed. Please check your bookings.",
                 );
+                navigate("/mybooking");
               }
             } catch {
               clearInterval(interval);

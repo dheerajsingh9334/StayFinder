@@ -75,7 +75,7 @@ export default function ChangePassword() {
             width: "48px",
             height: "48px",
             borderRadius: "var(--radius-lg)",
-            background: "linear-gradient(135deg, var(--primary-light), var(--primary))",
+            background: "#000000",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

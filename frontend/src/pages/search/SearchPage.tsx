@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Brain, Filter, Sparkles, Search, WandSparkles } from "lucide-react";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ import {
 } from "../../services/search.service";
 import type { PropertyPayload } from "../../features/property/property.types";
 import { useInfinteScroll } from "../../hooks/useInfinteScroll";
+import Button from "../../components/ui/Button";
 
 type SearchMode = "normal" | "ai" | "semantic";
 
@@ -40,6 +41,13 @@ export default function SearchPage() {
   const initialQuery = useInitialQuery();
 
   const [query, setQuery] = useState(initialQuery);
+
+  // Auto-search on mount if query exists (Fixes reload)
+  useEffect(() => {
+    if (initialQuery && !hasSearched && !isLoading) {
+      void runSearch();
+    }
+  }, []); // Only on mount
   const [mode, setMode] = useState<SearchMode>("semantic");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -264,13 +272,13 @@ export default function SearchPage() {
               <Brain size={16} />
               AI Search
             </button>
-            <button
-              className="btn btn-primary"
+            <Button
+              className="w-full sm:w-auto"
               type="submit"
-              disabled={isLoading}
+              isLoading={isLoading}
             >
-              {isLoading ? "Searching..." : "Search"}
-            </button>
+              Search
+            </Button>
           </div>
 
           <div

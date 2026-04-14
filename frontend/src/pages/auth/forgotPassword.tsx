@@ -45,7 +45,7 @@ export default function ForgotPassword() {
               width: "80px",
               height: "80px",
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #dcfce7, #bbf7d0)",
+              background: "#000000",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -128,8 +128,7 @@ export default function ForgotPassword() {
               width: "64px",
               height: "64px",
               borderRadius: "var(--radius-xl)",
-              background:
-                "linear-gradient(135deg, var(--primary-light), var(--primary))",
+              background: "#000000",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

@@ -35,6 +35,7 @@ export type BookingProperty = {
   state?: string;
   address?: string;
   images: string[];
+  ownerId?: string;
 };
 export type CreatePaymentPayload = {
   bookingId: string;

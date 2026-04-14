@@ -72,215 +72,97 @@ export default function BookingPage() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="btn btn-ghost"
-        style={{ marginBottom: "var(--space-4)" }}
-      >
-        <ChevronLeft size={20} />
-        Back
-      </button>
+    <div className="page-container flex justify-center py-12">
+      <div className="w-full max-w-2xl">
+        <button
+          onClick={() => navigate(-1)}
+          className="btn btn-ghost text-white/70 hover:text-white mb-6 p-0"
+        >
+          <ChevronLeft size={20} className="mr-2 inline" />
+          Back to listing
+        </button>
 
-      <div className="card" style={{ overflow: "visible" }}>
-        <div className="card-header">
-          <h2
-            style={{
-              fontSize: "var(--text-xl)",
-              fontWeight: "var(--font-bold)",
-            }}
-          >
-            Complete your booking
-          </h2>
-          <p
-            style={{
-              color: "var(--gray-500)",
-              fontSize: "var(--text-sm)",
-              marginTop: "var(--space-1)",
-            }}
-          >
-            Fill in the details below to reserve your stay
-          </p>
-        </div>
+        <div className="rounded-3xl border border-white/10 bg-black/40 p-8 shadow-xl backdrop-blur-md">
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold text-white tracking-tight">Confirm Reservation</h2>
+            <p className="text-white/60 mt-2">Specify your dates and party size to reserve your stay.</p>
+          </div>
 
-        <form onSubmit={handleCreate}>
-          <div
-            className="card-body"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "var(--space-5)",
-            }}
-          >
-            {/* Dates */}
-            <div>
-              <h4
-                style={{
-                  fontSize: "var(--text-sm)",
-                  fontWeight: "var(--font-semibold)",
-                  marginBottom: "var(--space-3)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-2)",
-                }}
-              >
-                <Calendar size={18} />
-                Select your dates
+          <form onSubmit={handleCreate} className="space-y-8">
+            {/* Dates Card */}
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-white uppercase tracking-widest">
+                <Calendar size={18} /> Schedule
               </h4>
-              <div className="form-row">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   type="date"
-                  label="Check-in"
+                  label="Check-in Date"
                   value={form.startDate}
-                  onChange={(e) =>
-                    setForm({ ...form, startDate: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
                   disabled={isPending}
                   min={minStartDate}
                 />
                 <Input
                   type="date"
-                  label="Check-out"
+                  label="Check-out Date"
                   value={form.endDate}
-                  onChange={(e) =>
-                    setForm({ ...form, endDate: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
                   disabled={isPending}
                   min={form.startDate || todayLocal}
                 />
               </div>
             </div>
 
-            {/* Guests */}
-            <div>
-              <h4
-                style={{
-                  fontSize: "var(--text-sm)",
-                  fontWeight: "var(--font-semibold)",
-                  marginBottom: "var(--space-3)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-2)",
-                }}
-              >
-                <Users size={18} />
-                Number of guests
+            {/* Guests Card */}
+            <div className="space-y-4">
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-white uppercase tracking-widest">
+                <Users size={18} /> Party Size
               </h4>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--space-4)",
-                  padding: "var(--space-4)",
-                  background: "var(--gray-50)",
-                  borderRadius: "var(--radius-lg)",
-                }}
-              >
-                <button
-                  type="button"
-                  className="booking-guests-btn"
-                  onClick={() =>
-                    setForm({
-                      ...form,
-                      capacity: Math.max(1, form.capacity - 1),
-                    })
-                  }
-                  disabled={form.capacity <= 1 || isPending}
-                >
-                  -
-                </button>
-                <span
-                  style={{
-                    fontSize: "var(--text-xl)",
-                    fontWeight: "var(--font-semibold)",
-                    minWidth: "40px",
-                    textAlign: "center",
-                  }}
-                >
-                  {form.capacity}
-                </span>
-                <button
-                  type="button"
-                  className="booking-guests-btn"
-                  onClick={() =>
-                    setForm({ ...form, capacity: form.capacity + 1 })
-                  }
-                  disabled={isPending}
-                >
-                  +
-                </button>
-                <span
-                  style={{
-                    color: "var(--gray-500)",
-                    fontSize: "var(--text-sm)",
-                  }}
-                >
-                  guest{form.capacity > 1 ? "s" : ""}
-                </span>
+              <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl">
+                <span className="text-white/80">Number of guests</span>
+                <div className="flex items-center gap-6">
+                  <button
+                    type="button"
+                    className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 disabled:opacity-50 transition"
+                    onClick={() => setForm({ ...form, capacity: Math.max(1, form.capacity - 1) })}
+                    disabled={form.capacity <= 1 || isPending}
+                  >
+                    -
+                  </button>
+                  <span className="text-xl font-semibold text-white min-w-[20px] text-center">{form.capacity}</span>
+                  <button
+                    type="button"
+                    className="w-10 h-10 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 disabled:opacity-50 transition"
+                    onClick={() => setForm({ ...form, capacity: form.capacity + 1 })}
+                    disabled={isPending}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Info Box */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "var(--space-3)",
-                padding: "var(--space-4)",
-                background: "var(--primary-50)",
-                borderRadius: "var(--radius-lg)",
-                border: "1px solid var(--primary-100)",
-              }}
-            >
-              <Shield
-                size={20}
-                style={{ color: "var(--primary-600)", flexShrink: 0 }}
-              />
+            {/* Security Box */}
+            <div className="flex items-start gap-4 p-5 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+              <Shield size={24} className="text-blue-400 shrink-0" />
               <div>
-                <p
-                  style={{
-                    fontSize: "var(--text-sm)",
-                    fontWeight: "var(--font-medium)",
-                    color: "var(--primary-700)",
-                    marginBottom: "var(--space-1)",
-                  }}
-                >
-                  Secure booking
-                </p>
-                <p
-                  style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--primary-600)",
-                  }}
-                >
-                  Your payment is protected. You'll be redirected to complete
-                  the payment after confirming.
+                <p className="text-sm font-semibold text-blue-200 mb-1">Encrypted Transaction</p>
+                <p className="text-xs text-blue-300 leading-relaxed">
+                  Your reservation is securely staged. You will be redirected to our payment gateway to complete and finalize the transaction.
                 </p>
               </div>
             </div>
-          </div>
 
-          <div
-            className="card-footer"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <p style={{ fontSize: "var(--text-sm)", color: "var(--gray-500)" }}>
-              You won't be charged yet
-            </p>
-            <Button
-              type="submit"
-              isLoading={isPending}
-              rightIcon={<ArrowRight size={18} />}
-            >
-              Confirm Booking
-            </Button>
-          </div>
-        </form>
+            {/* Submit */}
+            <div className="pt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-t border-white/10 mt-6">
+              <p className="text-sm text-white/50 text-center md:text-left">No funds will be captured yet.</p>
+              <Button type="submit" isLoading={isPending} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white" rightIcon={<ArrowRight size={18} />}>
+                Proceed to Checkout
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -88,6 +88,10 @@ export default class availabilityController {
       await prisma.propertyAvailability.delete({
         where: { id: blockId },
       });
+      await Promise.all([
+        redisClient.incr(`calendar:version:${block.propertyId}`),
+        redisClient.incr(`availability:version:${block.propertyId}`),
+      ]);
       return res.status(200).json({
         msg: "Avaiability unblocked",
       });
@@ -125,8 +129,9 @@ export default class availabilityController {
     try {
       const { propertyId } = req.params;
       const { startDate, endDate } = req.query;
-      const version = (await redisClient.get("calender:version")) || "1";
-      const key = `calender:v${version}:${propertyId}:${startDate}:${endDate}`;
+      const version =
+        (await redisClient.get(`calendar:version:${propertyId}`)) || "1";
+      const key = `calendar:v${version}:${propertyId}:${startDate}:${endDate}`;
       const cache = await redisClient.get(key);
       if (cache) {
         console.log("calendar cache hit");

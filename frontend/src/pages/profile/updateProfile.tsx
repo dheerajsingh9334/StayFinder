@@ -45,7 +45,7 @@ export default function UpdateProfile() {
               width: "100px",
               height: "100px",
               borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--primary), var(--primary-dark))",
+              background: "#000000",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

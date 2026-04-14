@@ -16,8 +16,10 @@ export const CreatePropertyApi = async (
 
 export const GetAllApi = async (
   page: number,
+  limit = 20,
+  search = '',
 ): Promise<PropertyListResponse> => {
-  const res = await propertyServices.getAll(page);
+  const res = await propertyServices.getAll(page, limit, search);
   return res.data;
 };
 
@@ -49,4 +51,9 @@ export const getNearByApi = async (
 ): Promise<NearbyPropertyResponse> => {
   const res = await propertyServices.getNearBy(lat, lng, radius, limit);
   return res.data;
+};
+
+export const deletePropertyApi = async (id: string): Promise<PropertyPayload> => {
+  const res = await propertyServices.delete(id);
+  return res.data.property;
 };

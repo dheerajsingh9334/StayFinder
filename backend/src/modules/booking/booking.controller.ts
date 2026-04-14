@@ -246,6 +246,15 @@ export default class bookingController {
           capacity: true,
           totalPrice: true,
           status: true,
+          payments: {
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+              provider: true,
+              createdAt: true,
+            }
+          },
           user: {
             select: {
               id: true,
@@ -300,13 +309,24 @@ export default class bookingController {
           capacity: true,
           status: true,
           createdAt: true,
+          payments: {
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+              provider: true,
+              createdAt: true,
+            }
+          },
           property: {
             select: {
               id: true,
               title: true,
               city: true,
+              state: true,
               images: true,
               address: true,
+              ownerId: true,
             },
           },
         },

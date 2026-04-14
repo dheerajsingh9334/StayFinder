@@ -1,44 +1,65 @@
-import { Suspense, lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Suspense, lazy } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import {
   ProtectedRoute,
   PublicRoute,
   RoleRoute,
   VerifiedRoute,
-} from "./Manage.route";
+} from './Manage.route';
 
-const Login = lazy(() => import("../pages/auth/login"));
-const Singup = lazy(() => import("../pages/auth/signup"));
-const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
-const ForgotPassword = lazy(() => import("../pages/auth/forgotPassword"));
-const OtpVerification = lazy(() => import("../pages/auth/OtpVerification"));
-const Profile = lazy(() => import("../pages/profile/profile").then(m => ({ default: m.Profile })));
-const UpdateProfile = lazy(() => import("../pages/profile/updateProfile"));
-const LandingPage = lazy(() => import("../pages/home/LandingPage"));
-const PropertyList = lazy(() => import("../pages/property/propertyList"));
-const PropertyDetails = lazy(() => import("../pages/property/propertyDetails"));
-const CreateProperty = lazy(() => import("../pages/property/CreateProperty"));
-const OwnerProperty = lazy(() => import("../pages/property/OwnerProperty"));
-const NearBy = lazy(() => import("../pages/property/NearBy"));
-const SearchPage = lazy(() => import("../pages/search/SearchPage"));
-const CalendarView = lazy(() => import("../pages/availbility/CalenderView"));
-const BookingPage = lazy(() => import("../pages/booking/BookingPage"));
-const BookingDetails = lazy(() => import("../pages/booking/BookingDetails"));
-const MyBooking = lazy(() => import("../pages/booking/UserBookingPage"));
-const ReviewsList = lazy(() => import("../pages/reviews/ReviewsList"));
-const CreateReview = lazy(() => import("../pages/reviews/CreateReview"));
-const Favorites = lazy(() => import("../pages/favorites/Favorites"));
-const Notifications = lazy(() => import("../pages/notifications/Notifications"));
-const HostDashboard = lazy(() => import("../pages/dashboard/HostDashBoard"));
-const AdminDashboard = lazy(() => import("../pages/dashboard/AdminDashboard"));
-const AdminUsers = lazy(() => import("../pages/dashboard/AdminUsers"));
-const AdminProperties = lazy(() => import("../pages/dashboard/AdminProperties"));
-const HostPanel = lazy(() => import("../pages/dashboard/HostPanel"));
-const MessagesPage = lazy(() => import("../pages/messages/MessagesPage"));
+const Login = lazy(() => import('../pages/auth/login'));
+const Singup = lazy(() => import('../pages/auth/signup'));
+const ChangePassword = lazy(() => import('../pages/auth/ChangePassword'));
+const ForgotPassword = lazy(() => import('../pages/auth/forgotPassword'));
+const OtpVerification = lazy(() => import('../pages/auth/OtpVerification'));
+const Profile = lazy(() =>
+  import('../pages/profile/profile').then((m) => ({ default: m.Profile })),
+);
+const UpdateProfile = lazy(() => import('../pages/profile/updateProfile'));
+const LandingPage = lazy(() => import('../pages/home/LandingPage'));
+const PropertyList = lazy(() => import('../pages/property/propertyList'));
+const PropertyDetails = lazy(() => import('../pages/property/propertyDetails'));
+const CreateProperty = lazy(() => import('../pages/property/CreateProperty'));
+const OwnerProperty = lazy(() => import('../pages/property/OwnerProperty'));
+const NearBy = lazy(() => import('../pages/property/NearBy'));
+const CalendarView = lazy(() => import('../pages/availbility/CalenderView'));
+const BookingPage = lazy(() => import('../pages/booking/BookingPage'));
+const BookingDetails = lazy(() => import('../pages/booking/BookingDetails'));
+const MyBooking = lazy(() => import('../pages/booking/UserBookingPage'));
+const ReviewsList = lazy(() => import('../pages/reviews/ReviewsList'));
+const CreateReview = lazy(() => import('../pages/reviews/CreateReview'));
+const Favorites = lazy(() => import('../pages/favorites/Favorites'));
+const Notifications = lazy(
+  () => import('../pages/notifications/Notifications'),
+);
+const HostDashboard = lazy(() => import('../pages/dashboard/HostDashBoard'));
+const AdminDashboard = lazy(() => import('../pages/dashboard/AdminDashboard'));
+const AdminUsers = lazy(() => import('../pages/dashboard/AdminUsers'));
+const AdminProperties = lazy(
+  () => import('../pages/dashboard/AdminProperties'),
+);
+const AdminBookings = lazy(() => import('../pages/dashboard/AdminBookings'));
+const AdminPayments = lazy(() => import('../pages/dashboard/AdminPayments'));
+const AdminReviews = lazy(() => import('../pages/dashboard/AdminReviews'));
+const AdminHosts = lazy(() => import('../pages/dashboard/AdminHosts'));
+const HostPanel = lazy(() => import('../pages/dashboard/HostPanel'));
+const MessagesPage = lazy(() => import('../pages/messages/MessagesPage'));
+const PaymentHistory = lazy(() => import('../pages/payment/PaymentHistory'));
+const NotFoundPage = lazy(() =>
+  import('../components/ui/404-page-not-found').then((m) => ({
+    default: m.NotFoundPage,
+  })),
+);
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<div className="loader-container"><div className="loader" /></div>}>
+    <Suspense
+      fallback={
+        <div className="loader-container">
+          <div className="loader" />
+        </div>
+      }
+    >
       <Routes>
         {/* Auth Routes */}
         <Route
@@ -51,11 +72,19 @@ export default function AppRoutes() {
         />
         <Route
           path="/register"
-          element={<PublicRoute><Singup /></PublicRoute>}
+          element={
+            <PublicRoute>
+              <Singup />
+            </PublicRoute>
+          }
         />
         <Route
           path="/forgot-password"
-          element={<PublicRoute><ForgotPassword /></PublicRoute>}
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
         />
         <Route path="/otp-verification" element={<OtpVerification />} />
         <Route
@@ -88,14 +117,14 @@ export default function AppRoutes() {
         {/* Property Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/properties" element={<PropertyList />} />
-        <Route path="/search" element={<SearchPage />} />
+        <Route path="/search" element={<Navigate to="/" replace />} />
         <Route path="/properties/:id" element={<PropertyDetails />} />
         <Route path="/nearby" element={<NearBy />} />
         <Route
           path="/CreateProperty"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["HOST"]}>
+              <RoleRoute allowedRoles={['HOST']}>
                 <CreateProperty />
               </RoleRoute>
             </VerifiedRoute>
@@ -105,7 +134,7 @@ export default function AppRoutes() {
           path="/Myproperty"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["HOST"]}>
+              <RoleRoute allowedRoles={['HOST']}>
                 <OwnerProperty />
               </RoleRoute>
             </VerifiedRoute>
@@ -137,9 +166,14 @@ export default function AppRoutes() {
             </VerifiedRoute>
           }
         />
+        <Route path="/CalendarView/properties/:propertyId" element={<CalendarView />} />
         <Route
-          path="/CalendarView/properties/:propertyId"
-          element={<CalendarView />}
+          path="/payment-history"
+          element={
+            <VerifiedRoute>
+              <PaymentHistory />
+            </VerifiedRoute>
+          }
         />
 
         {/* Reviews Routes */}
@@ -185,7 +219,7 @@ export default function AppRoutes() {
           path="/host-dashboard"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["HOST"]}>
+              <RoleRoute allowedRoles={['HOST']}>
                 <HostDashboard />
               </RoleRoute>
             </VerifiedRoute>
@@ -195,7 +229,7 @@ export default function AppRoutes() {
           path="/host-panel"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["HOST"]}>
+              <RoleRoute allowedRoles={['HOST']}>
                 <HostPanel />
               </RoleRoute>
             </VerifiedRoute>
@@ -205,7 +239,7 @@ export default function AppRoutes() {
           path="/admin-dashboard"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["ADMIN"]}>
+              <RoleRoute allowedRoles={['ADMIN']}>
                 <AdminDashboard />
               </RoleRoute>
             </VerifiedRoute>
@@ -215,7 +249,7 @@ export default function AppRoutes() {
           path="/admin-dashboard/users"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["ADMIN"]}>
+              <RoleRoute allowedRoles={['ADMIN']}>
                 <AdminUsers />
               </RoleRoute>
             </VerifiedRoute>
@@ -225,8 +259,48 @@ export default function AppRoutes() {
           path="/admin-dashboard/properties"
           element={
             <VerifiedRoute>
-              <RoleRoute allowedRoles={["ADMIN"]}>
+              <RoleRoute allowedRoles={['ADMIN']}>
                 <AdminProperties />
+              </RoleRoute>
+            </VerifiedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard/bookings"
+          element={
+            <VerifiedRoute>
+              <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminBookings />
+              </RoleRoute>
+            </VerifiedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard/payments"
+          element={
+            <VerifiedRoute>
+              <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminPayments />
+              </RoleRoute>
+            </VerifiedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard/reviews"
+          element={
+            <VerifiedRoute>
+              <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminReviews />
+              </RoleRoute>
+            </VerifiedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard/hosts"
+          element={
+            <VerifiedRoute>
+              <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminHosts />
               </RoleRoute>
             </VerifiedRoute>
           }
@@ -240,7 +314,7 @@ export default function AppRoutes() {
           }
         />
         {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );

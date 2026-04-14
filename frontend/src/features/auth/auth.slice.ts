@@ -33,7 +33,7 @@ const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isSuccess: false,
-  isloading: false,
+  isloading: true,
   error: null,
   otpEmail: null,
   otpVerified: false,

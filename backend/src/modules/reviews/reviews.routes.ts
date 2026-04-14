@@ -23,7 +23,7 @@ reviewRouter.patch(
 reviewRouter.patch(
   "/toggle/:reviewId",
   authMiddleware,
-  verifyRole([Role.ADMIN], "only admin have this access"),
+  verifyRole([Role.ADMIN, Role.HOST], "only admin or host have this access"),
   reviewsControlller.toggleReviews
 );
 

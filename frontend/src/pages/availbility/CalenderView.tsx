@@ -59,31 +59,34 @@ export default function CalendarView({
     string,
     { bg: string; text: string; border: string }
   > = {
-    AVAILABLE: { bg: "#e8f8f1", text: "#16885f", border: "#b8efd8" },
-    BLOCKED: { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
-    FULL: { bg: "#fff7ed", text: "#b45309", border: "#fed7aa" },
-    UNAVAILABLE: { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
-    BOOKED: { bg: "#fff7ed", text: "#b45309", border: "#fed7aa" },
-    PARTIAL: { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
+    AVAILABLE: { bg: "rgba(16, 185, 129, 0.1)", text: "#34d399", border: "rgba(16, 185, 129, 0.2)" },
+    BLOCKED: { bg: "rgba(239, 68, 68, 0.1)", text: "#f87171", border: "rgba(239, 68, 68, 0.2)" },
+    FULL: { bg: "rgba(239, 68, 68, 0.1)", text: "#f87171", border: "rgba(239, 68, 68, 0.2)" },
+    UNAVAILABLE: { bg: "rgba(239, 68, 68, 0.1)", text: "#f87171", border: "rgba(239, 68, 68, 0.2)" },
+    SOLD_OUT: { bg: "rgba(239, 68, 68, 0.1)", text: "#f87171", border: "rgba(239, 68, 68, 0.2)" },
+    BOOKED: { bg: "rgba(245, 158, 11, 0.1)", text: "#fbbf24", border: "rgba(245, 158, 11, 0.2)" },
+    PARTIAL: { bg: "rgba(245, 158, 11, 0.1)", text: "#fbbf24", border: "rgba(245, 158, 11, 0.2)" },
+    LIMITED: { bg: "rgba(245, 158, 11, 0.1)", text: "#fbbf24", border: "rgba(245, 158, 11, 0.2)" },
   };
-  const defaultDayTone = { bg: "#f8fafc", text: "#64748b", border: "#e2e8f0" };
+  const defaultDayTone = { bg: "transparent", text: "#71717a", border: "transparent" };
 
   return (
     <div
       style={{
-        border: "1px solid var(--gray-100)",
+        border: "1px solid rgba(255,255,255,0.1)",
         borderRadius: 16,
-        background: "var(--white)",
-        boxShadow: "var(--shadow-sm)",
+        background: "#0a0a0a",
+        color: "white",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
         overflow: "hidden",
       }}
     >
       <div
         style={{
           padding: "14px 16px",
-          background: "var(--bg-secondary)",
-          color: "var(--gray-600)",
-          borderBottom: "1px solid var(--gray-100)",
+          background: "#111111",
+          color: "#a1a1aa",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -100,9 +103,9 @@ export default function CalendarView({
             fontSize: 12,
             padding: "4px 8px",
             borderRadius: 999,
-            background: "var(--primary-50)",
-            border: "1px solid var(--primary-200)",
-            color: "var(--primary-700)",
+            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.1)",
+            color: "#d4d4d8",
           }}
         >
           Monthly Snapshot
@@ -122,21 +125,21 @@ export default function CalendarView({
           {[
             {
               label: "Available",
-              color: "#e8f8f1",
-              text: "#16885f",
-              border: "#b8efd8",
+              color: "rgba(16, 185, 129, 0.1)",
+              text: "#34d399",
+              border: "rgba(16, 185, 129, 0.2)",
             },
             {
-              label: "Blocked/Unavailable",
-              color: "#fef2f2",
-              text: "#b91c1c",
-              border: "#fecaca",
+              label: "Limited/Partial",
+              color: "rgba(245, 158, 11, 0.1)",
+              text: "#fbbf24",
+              border: "rgba(245, 158, 11, 0.2)",
             },
             {
-              label: "Past Date",
-              color: "#f8fafc",
-              text: "#64748b",
-              border: "#e2e8f0",
+              label: "Blocked/Sold Out",
+              color: "rgba(239, 68, 68, 0.1)",
+              text: "#f87171",
+              border: "rgba(239, 68, 68, 0.2)",
             },
           ].map((legend) => (
             <span
@@ -160,7 +163,6 @@ export default function CalendarView({
                   height: 8,
                   borderRadius: 999,
                   background: legend.text,
-                  boxShadow: `0 0 6px ${legend.text}`,
                 }}
               />
               {legend.label}
@@ -168,11 +170,12 @@ export default function CalendarView({
           ))}
           <span
             style={{
+               marginLeft: "auto",
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
               fontSize: 12,
-              color: "var(--gray-500)",
+              color: "#52525b",
             }}
           >
             <TriangleAlert size={13} />
@@ -197,16 +200,16 @@ export default function CalendarView({
               width: "100%",
               maxWidth: "100%",
               background: "transparent",
-              color: "var(--gray-600)",
+              color: "#d4d4d8",
               borderRadius: 16,
               border: "none",
               p: 1,
               "& .MuiTypography-root, & .MuiDayCalendar-weekDayLabel, & .MuiPickersCalendarHeader-label":
                 {
-                  color: "var(--gray-500)",
+                  color: "#a1a1aa",
                 },
               "& .MuiIconButton-root": {
-                color: "var(--primary-600)",
+                color: "#e4e4e7",
               },
             }}
             slots={{
@@ -226,16 +229,20 @@ export default function CalendarView({
                     sx={{
                       height: 56,
                       width: 58,
-                      opacity: isPast ? 0.5 : 1,
+                      opacity: isPast ? 0.3 : 1,
                       position: "relative",
-                      backgroundColor: isPast ? "#f8fafc" : dayTone.bg,
-                      color: isPast ? "#94a3b8" : dayTone.text,
+                      backgroundColor: isPast ? "transparent" : dayTone.bg,
+                      color: isPast ? "#3f3f46" : dayTone.text,
                       border: `1px solid ${isPast ? "transparent" : dayTone.border}`,
                       borderRadius: 1,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
+                      transition: "0.2s",
+                      "&:hover, &:focus": {
+                         backgroundColor: "rgba(255,255,255,0.1) !important"
+                      }
                     }}
                   >
                     {isPast && (
@@ -244,7 +251,7 @@ export default function CalendarView({
                           position: "absolute",
                           top: 4,
                           right: 4,
-                          color: "#94a3b8",
+                          color: "#3f3f46",
                           width: 12,
                           height: 12,
                         }}

@@ -4,6 +4,7 @@ import type {
   PropertyPayload,
   NearByProperty,
 } from "../../features/property/property.types";
+import { FeyButton } from "../ui/fey-button";
 
 type PropertyCardData = PropertyPayload | NearByProperty;
 
@@ -20,9 +21,18 @@ export default function PropertyCard({
   onFavorite,
   isFavorite = false,
 }: PropertyCardProps) {
+  const [isNavigating, setIsNavigating] = React.useState(false);
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onFavorite?.(property.id);
+  };
+
+  const handleCardClick = () => {
+    if (onClick && !isNavigating) {
+      setIsNavigating(true);
+      setTimeout(() => onClick(), 400);
+    }
   };
 
   const image =
@@ -39,7 +49,7 @@ export default function PropertyCard({
   const bedrooms = "bedrooms" in property ? property.bedrooms : undefined;
 
   return (
-    <div className="property-card" onClick={onClick}>
+    <div className="property-card relative overflow-hidden group cursor-pointer border hover:border-white/20 transition-all" onClick={handleCardClick}>
       <div className="property-card-image">
         <img src={image} alt={title} loading="lazy" />
 
@@ -92,6 +102,17 @@ export default function PropertyCard({
             <span>/night</span>
           </div>
         </div>
+
+        <FeyButton 
+          className="mt-4 w-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+          isLoading={isNavigating}
+        >
+          View details
+        </FeyButton>
       </div>
     </div>
   );

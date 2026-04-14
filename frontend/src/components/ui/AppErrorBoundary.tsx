@@ -1,4 +1,5 @@
-import React from "react";
+import React from 'react';
+import { ServerErrorPage } from '@/components/ui/server-error';
 
 type Props = {
   children: React.ReactNode;
@@ -12,49 +13,23 @@ type State = {
 export default class AppErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, message: "" };
+    this.state = { hasError: false, message: '' };
   }
 
   static getDerivedStateFromError(error: Error): State {
     return {
       hasError: true,
-      message: error?.message || "Something went wrong",
+      message: error?.message || 'Something went wrong',
     };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("[AppErrorBoundary]", error, info);
+    console.error('[AppErrorBoundary]', error, info);
   }
-
-  handleReload = () => {
-    window.location.reload();
-  };
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div
-          className="page-container"
-          style={{ paddingTop: "3rem", textAlign: "center" }}
-        >
-          <h2>Something went wrong</h2>
-          <p style={{ color: "var(--gray-600)", marginBottom: "1rem" }}>
-            The page crashed while rendering. Please reload.
-          </p>
-          <p
-            style={{
-              color: "var(--gray-500)",
-              fontSize: "0.9rem",
-              marginBottom: "1.5rem",
-            }}
-          >
-            {this.state.message}
-          </p>
-          <button className="btn btn-primary" onClick={this.handleReload}>
-            Reload Page
-          </button>
-        </div>
-      );
+      return <ServerErrorPage message={this.state.message} />;
     }
 
     return this.props.children;
