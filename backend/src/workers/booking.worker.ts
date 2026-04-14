@@ -108,6 +108,6 @@ new Worker(
     }
   },
   {
-    connection: bullmqConnection,
+    connection: bullmqConnection as any,
   },
 );

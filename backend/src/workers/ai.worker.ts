@@ -41,7 +41,7 @@ new Worker(
     return responseData;
   },
   {
-    connection: bullmqConnection,
+    connection: bullmqConnection as any,
     concurrency: 5,
   },
 );

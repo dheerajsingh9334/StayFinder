@@ -2,5 +2,5 @@ import { Queue } from "bullmq";
 import { bullmqConnection } from "../config/redis";
 
 export const aiQueue = new Queue("ai-search", {
-  connection: bullmqConnection,
+  connection: bullmqConnection as any,
 });
