@@ -9,7 +9,8 @@
     "dev:worker": "concurrently -n \"EMAIL,BOOKING,PAYMENT\" -c \"cyan,yellow,red\" \"tsx watch src/workers/email.worker.ts\" \"tsx watch src/workers/booking.worker.ts\" \"tsx watch src/workers/payment.worker.ts\"",
     "dev:worker:ai": "tsx watch src/workers/ai.worker.ts",
     "build": "tsc",
-    "start": "concurrently \"npm run start:web\" \"npm run start:worker\" \"npm run start:worker:ai\"",
+    "start": "npm run start:web",
+    "start:all": "concurrently \"npm run start:web\" \"npm run start:worker\" \"npm run start:worker:ai\"",
     "start:web": "node dist/cluster.js",
     "start:worker": "concurrently \"node dist/src/workers/email.worker.js\" \"node dist/src/workers/booking.worker.js\" \"node dist/src/workers/payment.worker.js\"",
     "start:worker:ai": "node dist/src/workers/ai.worker.js"

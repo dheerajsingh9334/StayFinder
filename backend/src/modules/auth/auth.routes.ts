@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import AuthController from "./auth.controller";
 import { authMiddleware } from "../../middleware/auth.Middleware";
 import passport from "passport";
@@ -20,8 +20,29 @@ authRouter.patch(
 );
 
 authRouter.patch("/password", authMiddleware, AuthController.changePassword);
+
+const isGoogleAuthConfigured = Boolean(
+  process.env.CLIENT_ID &&
+  process.env.CLIENT_SECRET &&
+  process.env.CALLBACK_URL,
+);
+
+const ensureGoogleAuthConfigured = (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!isGoogleAuthConfigured) {
+    return res.status(503).json({
+      msg: "Google OAuth is not configured",
+    });
+  }
+  next();
+};
+
 authRouter.get(
   "/google",
+  ensureGoogleAuthConfigured,
   passport.authenticate("google", {
     scope: ["profile", "email"],
     session: false,
@@ -29,6 +50,7 @@ authRouter.get(
 );
 authRouter.get(
   "/google/callback",
+  ensureGoogleAuthConfigured,
   passport.authenticate("google", {
     session: false,
     failureRedirect: "/login",
