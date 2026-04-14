@@ -4,7 +4,10 @@
   "description": "",
   "main": "dist/cluster.js",
   "scripts": {
-    "dev": "tsx watch server.ts",
+    "dev": "concurrently -n \"WEB,WORKER,AI\" -c \"blue,green,magenta\" \"npm run dev:web\" \"npm run dev:worker\" \"npm run dev:worker:ai\"",
+    "dev:web": "tsx watch server.ts",
+    "dev:worker": "concurrently -n \"EMAIL,BOOKING,PAYMENT\" -c \"cyan,yellow,red\" \"tsx watch src/workers/email.worker.ts\" \"tsx watch src/workers/booking.worker.ts\" \"tsx watch src/workers/payment.worker.ts\"",
+    "dev:worker:ai": "tsx watch src/workers/ai.worker.ts",
     "build": "tsc",
     "start": "concurrently \"npm run start:web\" \"npm run start:worker\" \"npm run start:worker:ai\"",
     "start:web": "node dist/cluster.js",
