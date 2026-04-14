@@ -19,18 +19,33 @@ const retryStrategy = (times: number) => {
   return Math.min(times * 200, 5000);
 };
 
-// Singleton ioredis client — used for direct cache operations (SET/GET/DEL)
-export const redisClient = new Redis(redisUrl, {
-  db: 0,
+const commonOptions: any = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy,
+  reconnectOnError: (err: any) => {
+    const targetError = "READONLY";
+    if (err.message.slice(0, targetError.length) === targetError) {
+      return true;
+    }
+    return false;
+  },
+};
+
+// Explicitly enable TLS if using rediss://
+if (redisUrl.startsWith("rediss://")) {
+  commonOptions.tls = {
+    rejectUnauthorized: false, // Often needed for serverless environments
+  };
+}
+
+// Singleton ioredis client — used for direct cache operations (SET/GET/DEL)
+export const redisClient = new Redis(redisUrl, {
+  ...commonOptions,
+  db: 0,
 });
 
 // BullMQ connection options shared across queues and workers.
-// Using a separate client instance as recommended by BullMQ when sharing connections
 export const bullmqConnection = new Redis(redisUrl, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  retryStrategy,
+  ...commonOptions,
 }) as any;
