@@ -1,6 +1,10 @@
 import { Request } from "express";
 import passport from "passport";
-import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  Profile,
+  VerifyCallback,
+} from "passport-google-oauth20";
 import prisma from "../utils/dbconnect";
 import { Role } from "@prisma/client";
 import {
@@ -25,7 +29,7 @@ passport.use(
       accessToken: string,
       refreshToken: string,
       profile: Profile,
-      done,
+      done: VerifyCallback,
     ) => {
       try {
         const email = profile.emails?.[0]?.value;
@@ -55,7 +59,7 @@ passport.use(
           refreshToken: refreshToken,
         });
       } catch (error) {
-        return done(Error, undefined);
+        return done(error as Error, undefined);
       }
     },
   ),

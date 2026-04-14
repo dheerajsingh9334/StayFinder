@@ -398,7 +398,9 @@ export default class AuthController {
         });
       }
       if (user.isEmailVerified) {
-        return "Email already verified";
+        return res.status(400).json({
+          msg: "Email already verified",
+        });
       }
       const userRole: Role = user?.role as Role;
 

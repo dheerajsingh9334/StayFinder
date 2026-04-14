@@ -9,10 +9,7 @@ export interface AuthTokenPayload {
 }
 
 export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    role: Role;
-  };
+  user?: any;
 }
 export interface AvaiabilityParams {
   propertyId: string;
