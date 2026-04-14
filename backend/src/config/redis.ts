@@ -56,6 +56,8 @@ export const redisClient = new Redis(redisUrl, {
 });
 
 // BullMQ connection options shared across queues and workers.
-export const bullmqConnection = new Redis(redisUrl, {
-  ...commonOptions,
+export const bullmqConnection = new Redis(redisUrl, commonOptions);
+
+bullmqConnection.on("error", (err: any) => {
+  console.error("[Redis] 🚨 Shared BullMQ connection error:", err);
 }) as any;

@@ -8,6 +8,7 @@ console.log("✉️  Email worker started — EMAIL_USER:", process.env.EMAIL_US
 const worker = new Worker(
   "emailQueue",
   async (job) => {
+    console.log(`[Worker] 📥 Received job ${job.name} (id: ${job.id})`);
     switch (job.name) {
       case "booking-created-email": {
         const { booking } = job.data;
@@ -177,3 +178,17 @@ worker.on("completed", (job) => {
 worker.on("failed", (job, err) => {
   console.error(`❌ Email job failed: ${job?.name} (${job?.id}) →`, err.message);
 });
+
+worker.on("error", (err) => {
+  console.error("[Worker] 🚨 Fatal error in worker:", err);
+});
+
+// Periodic heartbeat to confirm worker activity in logs
+setInterval(async () => {
+  try {
+    const status = await bullmqConnection.ping();
+    // console.log(`[Worker] ❤️ Heartbeat: Redis status ${status}`);
+  } catch (err) {
+    console.error(`[Worker] ❤️ Heartbeat failed:`, err);
+  }
+}, 30000);
