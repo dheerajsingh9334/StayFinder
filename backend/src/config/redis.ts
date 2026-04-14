@@ -28,10 +28,9 @@ export const redisClient = new Redis(redisUrl, {
 });
 
 // BullMQ connection options shared across queues and workers.
-export const bullmqConnection = {
-  url: redisUrl,
-  db: 0,
+// Using a separate client instance as recommended by BullMQ when sharing connections
+export const bullmqConnection = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy,
-};
+}) as any;

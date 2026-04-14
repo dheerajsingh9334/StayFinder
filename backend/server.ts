@@ -24,6 +24,12 @@ import "./src/config/passport.service";
 import passport from "./src/config/passport.service";
 import { initSocket } from "./src/socket/index";
 
+// Unified Worker Process for Free Tier
+if (process.env.START_WORKERS === "true") {
+  require("./src/workers/index");
+}
+
+
 const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
