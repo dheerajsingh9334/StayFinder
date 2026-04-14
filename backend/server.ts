@@ -32,6 +32,7 @@ if (process.env.START_WORKERS === "true") {
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 
 app.use(helmet());
