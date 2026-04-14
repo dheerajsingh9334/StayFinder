@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { FeyButton } from '../ui/fey-button';
 import { useFavorites } from '../../features/favorites/favorites.hooks';
+import { getApiUrl } from '../../utils/config';
 
 export default function Navbar() {
   const { user, isAuthenticated } = useSelector(
@@ -178,7 +179,7 @@ export default function Navbar() {
               <FeyButton
                 className="min-w-0 px-6 h-12 text-base"
                 onClick={() =>
-                  (window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/auth/google`)
+                  (window.location.href = `${getApiUrl()}/auth/google`)
                 }
               >
                 <img

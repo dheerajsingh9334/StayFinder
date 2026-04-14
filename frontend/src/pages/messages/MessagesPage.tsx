@@ -9,6 +9,7 @@ import Loader from "../../components/ui/Loader";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import { useSearchParams, Link } from "react-router-dom";
+import { getBackendUrl } from "../../utils/config";
 
 interface Message {
   id?: string;
@@ -75,7 +76,7 @@ export default function MessagesPage() {
   // ---- Socket setup ----
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    const backendUrl = getBackendUrl();
     const newSocket = io(backendUrl, { withCredentials: true, auth: { token } });
     setSocket(newSocket);
 

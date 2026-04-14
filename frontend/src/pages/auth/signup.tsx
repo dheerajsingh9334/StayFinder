@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { getApiUrl } from "../../utils/config";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import type { SignupPayload } from "../../features/auth/auth.types";
@@ -116,7 +117,7 @@ export default function Signup() {
              <div className="relative flex justify-center text-[10px] font-bold tracking-widest uppercase"><span className="bg-black px-4 text-white/40">OR</span></div>
           </div>
 
-          <a href={`${import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"}/auth/google`} className="inline-block w-full" style={{ textDecoration: 'none' }}>
+          <a href={`${getApiUrl()}/auth/google`} className="inline-block w-full" style={{ textDecoration: 'none' }}>
              <button
                type="button"
                className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"

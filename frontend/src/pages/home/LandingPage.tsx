@@ -34,6 +34,7 @@ import {
 } from '../../services/search.service';
 import { SearchPanel, defaultFilters } from '../../components/search/SearchPanel';
 import type { SearchMode, ActiveSearch } from '../../components/search/SearchPanel';
+import { getApiUrl } from '../../utils/config';
 
 const PAGE_SIZE = 20;
 
@@ -459,7 +460,7 @@ export default function LandingPage() {
               <FeyButton
                 className="min-w-50 h-12 text-sm px-6 shadow-xl"
                 onClick={() =>
-                  (window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/auth/google`)
+                  (window.location.href = `${getApiUrl()}/auth/google`)
                 }
               >
                 <img
