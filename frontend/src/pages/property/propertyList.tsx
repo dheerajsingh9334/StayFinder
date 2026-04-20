@@ -13,15 +13,19 @@ import type { SearchMode, ActiveSearch } from "../../components/search/SearchPan
 import { searchService, type SearchFilters, type SemanticParseResult } from "../../services/search.service";
 import { toast } from "react-hot-toast";
 
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store";
+
 const PAGE_SIZE = 12;
 
 export default function PropertyList() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [page, setPage] = useState(1);
   const [allItems, setAllItems] = useState<PropertyPayload[]>([]);
   const [totalPage, setTotalPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const { data: favoriteList } = useFavorites();
+  const { data: favoriteList } = useFavorites(isAuthenticated);
   const { mutate: toggleFavorite } = useToggleFavorite();
   const { data, isLoading, isError, isFetching } = useProperties(page);
 

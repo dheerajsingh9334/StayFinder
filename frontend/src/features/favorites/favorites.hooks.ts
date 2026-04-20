@@ -6,10 +6,11 @@ type FavoriteItem = {
   property: { id: string };
 };
 
-export const useFavorites = () => {
+export const useFavorites = (isAuthenticated: boolean = false) => {
   return useQuery({
-    queryKey: ["favorites"],
+    queryKey: ["favorites", isAuthenticated],
     queryFn: async () => {
+      if (!isAuthenticated) return new Set<string>();
       try {
         const res = await api.get("/favorite/my?limit=100");
         const items: FavoriteItem[] = res.data?.myFavorites || [];
@@ -22,6 +23,7 @@ export const useFavorites = () => {
         return new Set<string>();
       }
     },
+    enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
   });
 };

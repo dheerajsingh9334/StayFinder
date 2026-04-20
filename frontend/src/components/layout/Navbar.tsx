@@ -27,7 +27,7 @@ export default function Navbar() {
   const [search, setSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileRef = useRef<HTMLDivElement>(null);
-  const { data: favorites } = useFavorites();
+  const { data: favorites } = useFavorites(isAuthenticated);
   const wishCount = favorites?.size || 0;
 
   useEffect(() => {
